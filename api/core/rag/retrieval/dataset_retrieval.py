@@ -39,6 +39,7 @@ class DatasetRetrieval:
         """
         dataset_ids = config.dataset_ids
         retrieve_config = config.retrieve_config
+        data_type = config.data_type
 
         # check model is support tool calling
         model_type_instance = model_config.provider_model_bundle.model_type_instance
@@ -63,6 +64,7 @@ class DatasetRetrieval:
         dataset_retriever_tools = self.to_dataset_retriever_tool(
             tenant_id=tenant_id,
             dataset_ids=dataset_ids,
+            data_type=data_type,
             retrieve_config=retrieve_config,
             return_resource=show_retrieve_source,
             invoke_from=invoke_from,
@@ -94,6 +96,7 @@ class DatasetRetrieval:
 
     def to_dataset_retriever_tool(self, tenant_id: str,
                                   dataset_ids: list[str],
+                                  data_type: list[str],
                                   retrieve_config: DatasetRetrieveConfigEntity,
                                   return_resource: bool,
                                   invoke_from: InvokeFrom,
@@ -157,6 +160,7 @@ class DatasetRetrieval:
                 tool = DatasetRetrieverTool.from_dataset(
                     dataset=dataset,
                     top_k=top_k,
+                    data_type=data_type,
                     score_threshold=score_threshold,
                     hit_callbacks=[hit_callback],
                     return_resource=return_resource,
@@ -168,6 +172,7 @@ class DatasetRetrieval:
             tool = DatasetMultiRetrieverTool.from_dataset(
                 dataset_ids=[dataset.id for dataset in available_datasets],
                 tenant_id=tenant_id,
+                data_type=data_type,
                 top_k=retrieve_config.top_k or 2,
                 score_threshold=retrieve_config.score_threshold,
                 hit_callbacks=[hit_callback],

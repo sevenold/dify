@@ -36,6 +36,7 @@ class DatasetMultiRetrieverTool(BaseTool):
     description: str = "dataset multi retriever and rerank. "
     tenant_id: str
     dataset_ids: list[str]
+    data_type: list[str]
     top_k: int = 2
     score_threshold: Optional[float] = None
     reranking_provider_name: str
@@ -60,6 +61,7 @@ class DatasetMultiRetrieverTool(BaseTool):
             retrieval_thread = threading.Thread(target=self._retriever, kwargs={
                 'flask_app': current_app._get_current_object(),
                 'dataset_id': dataset_id,
+                'data_type': self.data_type,
                 'query': query,
                 'all_documents': all_documents,
                 'hit_callbacks': self.hit_callbacks
@@ -153,7 +155,7 @@ class DatasetMultiRetrieverTool(BaseTool):
         raise NotImplementedError()
 
     def _retriever(self, flask_app: Flask, dataset_id: str, query: str, all_documents: list,
-                   hit_callbacks: list[DatasetIndexToolCallbackHandler]):
+                   hit_callbacks: list[DatasetIndexToolCallbackHandler], data_type: list[str]):
         with flask_app.app_context():
             dataset = db.session.query(Dataset).filter(
                 Dataset.tenant_id == self.tenant_id,
@@ -183,6 +185,7 @@ class DatasetMultiRetrieverTool(BaseTool):
                     # retrieval source
                     documents = RetrievalService.retrieve(retrival_method=retrieval_model['search_method'],
                                                           dataset_id=dataset.id,
+                                                          data_type=data_type,
                                                           query=query,
                                                           top_k=self.top_k,
                                                           score_threshold=retrieval_model['score_threshold']

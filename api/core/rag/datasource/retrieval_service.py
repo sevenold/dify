@@ -25,7 +25,7 @@ class RetrievalService:
 
     @classmethod
     def retrieve(cls, retrival_method: str, dataset_id: str, query: str,
-                 top_k: int, score_threshold: Optional[float] = .0, reranking_model: Optional[dict] = None):
+                 top_k: int, data_type: list[str], score_threshold: Optional[float] = .0, reranking_model: Optional[dict] = None):
         dataset = db.session.query(Dataset).filter(
             Dataset.id == dataset_id
         ).first()
@@ -50,6 +50,7 @@ class RetrievalService:
                 'flask_app': current_app._get_current_object(),
                 'dataset_id': dataset_id,
                 'query': query,
+                'data_type': data_type,
                 'top_k': top_k,
                 'score_threshold': score_threshold,
                 'reranking_model': reranking_model,
@@ -108,7 +109,7 @@ class RetrievalService:
     @classmethod
     def embedding_search(cls, flask_app: Flask, dataset_id: str, query: str,
                          top_k: int, score_threshold: Optional[float], reranking_model: Optional[dict],
-                         all_documents: list, retrival_method: str):
+                         all_documents: list, retrival_method: str, data_type: list[str] = None):
         with flask_app.app_context():
             dataset = db.session.query(Dataset).filter(
                 Dataset.id == dataset_id
@@ -122,6 +123,7 @@ class RetrievalService:
                 query,
                 search_type='similarity_score_threshold',
                 top_k=top_k,
+                data_type=data_type,
                 score_threshold=score_threshold,
                 filter={
                     'group_id': [dataset.id]

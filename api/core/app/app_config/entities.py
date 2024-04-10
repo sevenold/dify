@@ -163,6 +163,7 @@ class DatasetEntity(BaseModel):
     Dataset Config Entity.
     """
     dataset_ids: list[str]
+    data_type: list[str] = ["1", '2']
     retrieve_config: DatasetRetrieveConfigEntity
 
 

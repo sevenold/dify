@@ -6,5 +6,6 @@ class Field(Enum):
     METADATA_KEY = "metadata"
     GROUP_KEY = "group_id"
     VECTOR = "vector"
+    DATA_TYPE = "data_type"
     TEXT_KEY = "text"
     PRIMARY_KEY = "id"

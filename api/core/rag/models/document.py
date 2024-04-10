@@ -9,6 +9,7 @@ class Document(BaseModel):
     """Class for storing a piece of text and associated metadata."""
 
     page_content: str
+    data_type: str = Field(default="法律法规")
 
     """Arbitrary metadata about the page content (e.g., source, relationships to other
         documents, etc.).

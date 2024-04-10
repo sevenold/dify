@@ -732,6 +732,7 @@ class DocumentService:
             document.data_source_type = document_data["data_source"]["type"]
             document.data_source_info = json.dumps(data_source_info)
             document.name = file_name
+            document.data_type = document_data['data_type']
         # update document to be waiting
         document.indexing_status = 'waiting'
         document.completed_at = None
@@ -806,6 +807,7 @@ class DocumentService:
         dataset = Dataset(
             tenant_id=tenant_id,
             name='',
+            data_type=document_data["data_type"],
             data_source_type=document_data["data_source"]["type"],
             indexing_technique=document_data["indexing_technique"],
             created_by=account.id,

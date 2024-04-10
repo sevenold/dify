@@ -29,7 +29,7 @@ class DatasetRetrieverTool(BaseTool):
     name: str = "dataset"
     args_schema: type[BaseModel] = DatasetRetrieverToolInput
     description: str = "use this to retrieve a dataset. "
-
+    data_type: list[str]
     tenant_id: str
     dataset_id: str
     top_k: int = 2
@@ -81,6 +81,7 @@ class DatasetRetrieverTool(BaseTool):
                 documents = RetrievalService.retrieve(retrival_method=retrieval_model['search_method'],
                                                       dataset_id=dataset.id,
                                                       query=query,
+                                                      data_type=self.data_type,
                                                       top_k=self.top_k,
                                                       score_threshold=retrieval_model['score_threshold']
                                                       if retrieval_model['score_threshold_enabled'] else None,

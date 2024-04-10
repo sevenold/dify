@@ -73,7 +73,8 @@ class MilvusVector(BaseVector):
             insert_dict = {
                 Field.CONTENT_KEY.value: documents[i].page_content,
                 Field.VECTOR.value: embeddings[i],
-                Field.METADATA_KEY.value: documents[i].metadata
+                Field.METADATA_KEY.value: documents[i].metadata,
+                Field.DATA_TYPE.value: documents[i].data_type
             }
             insert_dict_list.append(insert_dict)
         # Total insert count
@@ -156,13 +157,23 @@ class MilvusVector(BaseVector):
 
         return len(result) > 0
 
-    def search_by_vector(self, query_vector: list[float], **kwargs: Any) -> list[Document]:
-
+    def search_by_vector(self, query_vector: list[float], data_type: list[str] = None, **kwargs: Any) -> list[Document]:
+        if data_type:
+            exist_data_type = self.get_data_type()
+            _data_type = [_ for _ in data_type if _ in exist_data_type]
+            if _data_type:
+                _type = [f"{_}" for _ in _data_type]
+                expr = f"data_type in {_type}"
+            else:
+                expr = None
+        else:
+            expr = None
         # Set search parameters.
         results = self._client.search(collection_name=self._collection_name,
                                       data=[query_vector],
                                       limit=kwargs.get('top_k', 4),
                                       output_fields=[Field.CONTENT_KEY.value, Field.METADATA_KEY.value],
+                                      filter=expr
                                       )
         # Organize results.
         docs = []
@@ -175,6 +186,16 @@ class MilvusVector(BaseVector):
                                metadata=metadata)
                 docs.append(doc)
         return docs
+
+    def get_data_type(self):
+        expr = 'data_type != "None"'
+        result = self._client.query(
+            filter=expr,
+            output_fields=["data_type"],
+            consistency_level="Session",
+            collection_name=self._collection_name
+        )
+        return list(set([_["data_type"] for _ in result]))
 
     def search_by_full_text(self, query: str, **kwargs: Any) -> list[Document]:
         # milvus/zilliz doesn't support bm25 search
@@ -210,6 +231,10 @@ class MilvusVector(BaseVector):
                 # Create the text field
                 fields.append(
                     FieldSchema(Field.CONTENT_KEY.value, DataType.VARCHAR, max_length=65_535)
+                )
+                # Create the data type field
+                fields.append(
+                    FieldSchema(Field.DATA_TYPE.value, DataType.VARCHAR, max_length=65_535)
                 )
                 # Create the primary key field
                 fields.append(
