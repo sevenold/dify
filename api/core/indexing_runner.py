@@ -727,7 +727,8 @@ class IndexingRunner:
                     )
                     for document in chunk_documents
                 )
-
+            for document in chunk_documents:
+                document.data_type = dataset_document.data_type
             # load index
             index_processor.load(dataset, chunk_documents, with_keywords=False)
 
