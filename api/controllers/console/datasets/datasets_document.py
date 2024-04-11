@@ -234,6 +234,7 @@ class DatasetDocumentListApi(Resource):
         parser.add_argument('data_source', type=dict, required=False, location='json')
         parser.add_argument('process_rule', type=dict, required=False, location='json')
         parser.add_argument('duplicate', type=bool, nullable=False, location='json')
+        parser.add_argument('data_type', type=str, required=False, default='默认类型', nullable=False, location='json')
         parser.add_argument('original_document_id', type=str, required=False, location='json')
         parser.add_argument('doc_form', type=str, default='text_model', required=False, nullable=False, location='json')
         parser.add_argument('doc_language', type=str, default='English', required=False, nullable=False,
@@ -279,7 +280,7 @@ class DatasetInitApi(Resource):
         parser.add_argument('indexing_technique', type=str, choices=Dataset.INDEXING_TECHNIQUE_LIST, required=True,
                             nullable=False, location='json')
         parser.add_argument('data_source', type=dict, required=True, nullable=True, location='json')
-        parser.add_argument('data_type', type=str, required=True, nullable=False, location='json')
+        parser.add_argument('data_type', type=str, required=False, default='默认类型', nullable=False, location='json')
         parser.add_argument('process_rule', type=dict, required=True, nullable=True, location='json')
         parser.add_argument('doc_form', type=str, default='text_model', required=False, nullable=False, location='json')
         parser.add_argument('doc_language', type=str, default='English', required=False, nullable=False,

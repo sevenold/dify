@@ -553,12 +553,15 @@ class DocumentService:
                     data_source_info = {
                         "upload_file_id": file_id,
                     }
-                    document = DocumentService.build_document(dataset, dataset_process_rule.id,
-                                                              document_data["data_source"]["type"],
-                                                              document_data["doc_form"],
-                                                              document_data["doc_language"],
-                                                              data_source_info, created_from, position,
-                                                              account, file_name, batch)
+
+                    document = DocumentService.build_document(dataset=dataset, process_rule_id=dataset_process_rule.id,
+                                                              data_source_type=document_data["data_source"]["type"],
+                                                              document_form=document_data["doc_form"],
+                                                              data_type=document_data["data_type"],
+                                                              document_language=document_data["doc_language"],
+                                                              data_source_info=data_source_info,
+                                                              created_from=created_from, position=position,
+                                                              account=account, name=file_name, batch=batch)
                     db.session.add(document)
                     db.session.flush()
                     document_ids.append(document.id)
@@ -602,6 +605,7 @@ class DocumentService:
                             document = DocumentService.build_document(dataset, dataset_process_rule.id,
                                                                       document_data["data_source"]["type"],
                                                                       document_data["doc_form"],
+                                                                      document_data["data_type"],
                                                                       document_data["doc_language"],
                                                                       data_source_info, created_from, position,
                                                                       account, page['page_name'], batch)
@@ -626,13 +630,14 @@ class DocumentService:
     def check_documents_upload_quota(count: int, features: FeatureModel):
         can_upload_size = features.documents_upload_quota.limit - features.documents_upload_quota.size
         if count > can_upload_size:
-            raise ValueError(f'You have reached the limit of your subscription. Only {can_upload_size} documents can be uploaded.')
+            raise ValueError(
+                f'You have reached the limit of your subscription. Only {can_upload_size} documents can be uploaded.')
 
     @staticmethod
     def build_document(dataset: Dataset, process_rule_id: str, data_source_type: str, document_form: str,
                        document_language: str, data_source_info: dict, created_from: str, position: int,
                        account: Account,
-                       name: str, batch: str):
+                       name: str, batch: str, data_type: str):
         document = Document(
             tenant_id=dataset.tenant_id,
             dataset_id=dataset.id,
@@ -642,6 +647,7 @@ class DocumentService:
             dataset_process_rule_id=process_rule_id,
             batch=batch,
             name=name,
+            data_type=data_type,
             created_from=created_from,
             created_by=account.id,
             doc_form=document_form,
@@ -807,7 +813,6 @@ class DocumentService:
         dataset = Dataset(
             tenant_id=tenant_id,
             name='',
-            data_type=document_data["data_type"],
             data_source_type=document_data["data_source"]["type"],
             indexing_technique=document_data["indexing_technique"],
             created_by=account.id,
