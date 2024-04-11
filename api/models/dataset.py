@@ -25,7 +25,6 @@ class Dataset(db.Model):
     id = db.Column(UUID, server_default=db.text('uuid_generate_v4()'))
     tenant_id = db.Column(UUID, nullable=False)
     name = db.Column(db.String(255), nullable=False)
-    data_type = db.Column(db.String(255), nullable=False)
     description = db.Column(db.Text, nullable=True)
     provider = db.Column(db.String(255), nullable=False,
                          server_default=db.text("'vendor'::character varying"))
@@ -194,6 +193,7 @@ class Document(db.Model):
     dataset_process_rule_id = db.Column(UUID, nullable=True)
     batch = db.Column(db.String(255), nullable=False)
     name = db.Column(db.String(255), nullable=False)
+    data_type = db.Column(db.String(255), nullable=False)
     created_from = db.Column(db.String(255), nullable=False)
     created_by = db.Column(UUID, nullable=False)
     created_api_request_id = db.Column(UUID, nullable=True)
