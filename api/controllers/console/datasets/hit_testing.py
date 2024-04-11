@@ -57,6 +57,8 @@ class HitTestingApi(Resource):
         HitTestingService.hit_testing_args_check(args)
 
         try:
+            if not args['retrieval_model'].get('data_type'):
+                args['retrieval_model']['data_type'] = []
             response = HitTestingService.retrieve(
                 dataset=dataset,
                 query=args['query'],

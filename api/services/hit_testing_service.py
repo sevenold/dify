@@ -22,7 +22,8 @@ default_retrieval_model = {
         'reranking_model_name': ''
     },
     'top_k': 2,
-    'score_threshold_enabled': False
+    'score_threshold_enabled': False,
+    'data_type': []
 }
 
 
@@ -58,6 +59,7 @@ class HitTestingService:
         all_documents = RetrievalService.retrieve(retrival_method=retrieval_model['search_method'],
                                                   dataset_id=dataset.id,
                                                   query=query,
+                                                  data_type=retrieval_model['data_type'],
                                                   top_k=retrieval_model['top_k'],
                                                   score_threshold=retrieval_model['score_threshold']
                                                   if retrieval_model['score_threshold_enabled'] else None,
