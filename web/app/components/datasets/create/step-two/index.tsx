@@ -52,6 +52,7 @@ type StepTwoProps = {
   hasSetAPIKEY: boolean
   onSetting: () => void
   datasetId?: string
+  dataType?: string | '数据类型'
   indexingType?: ValueOf<IndexingType>
   dataSourceType: DataSourceType
   files: CustomFile[]
@@ -126,7 +127,7 @@ const StepTwo = ({
     return segmentationType === SegmentType.AUTO ? automaticFileIndexingEstimate : customFileIndexingEstimate
   })()
   const [isCreating, setIsCreating] = useState(false)
-
+  const [dataType, setDataType] = useState<string>('默认数据类型')
   const scrollHandle = (e: Event) => {
     if ((e.target as HTMLDivElement).scrollTop > 0)
       setScrolled(true)
@@ -134,7 +135,6 @@ const StepTwo = ({
     else
       setScrolled(false)
   }
-
   const previewScrollHandle = (e: Event) => {
     if ((e.target as HTMLDivElement).scrollTop > 0)
       setPreviewScrolled(true)
@@ -256,6 +256,7 @@ const StepTwo = ({
         doc_form: docForm,
         doc_language: docLanguage,
         dataset_id: datasetId as string,
+        data_type: dataType as string,
       }
     }
     if (dataSourceType === DataSourceType.NOTION) {
@@ -269,6 +270,7 @@ const StepTwo = ({
         doc_form: docForm,
         doc_language: docLanguage,
         dataset_id: datasetId as string,
+        data_type: dataType as string,
       }
     }
   }
@@ -291,6 +293,7 @@ const StepTwo = ({
         process_rule: getProcessRule(),
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
         retrieval_model: retrievalConfig, // Readonly. If want to changed, just go to settings page.
+        data_type: dataType as string,
       } as CreateDocumentReq
     }
     else { // create
@@ -325,8 +328,8 @@ const StepTwo = ({
         process_rule: getProcessRule(),
         doc_form: docForm,
         doc_language: docLanguage,
-
         retrieval_model: postRetrievalConfig,
+        data_type: dataType as string,
       } as CreateDocumentReq
       if (dataSourceType === DataSourceType.FILE) {
         params.data_source.info_list.file_info_list = {
@@ -646,19 +649,23 @@ const StepTwo = ({
                       setIndexType(IndexingType.QUALIFIED)
                   }}
                 >
-                  <span className={cn(s.typeIcon, s.qualified)} />
-                  {!hasSetIndexType && <span className={cn(s.radio)} />}
+                  <span className={cn(s.typeIcon, s.qualified)}/>
+                  {!hasSetIndexType && <span className={cn(s.radio)}/>}
                   <div className={s.typeHeader}>
                     <div className={s.title}>
                       {t('datasetCreation.stepTwo.qualified')}
-                      {!hasSetIndexType && <span className={s.recommendTag}>{t('datasetCreation.stepTwo.recommend')}</span>}
+                      {!hasSetIndexType
+                        && <span className={s.recommendTag}>{t('datasetCreation.stepTwo.recommend')}</span>}
                     </div>
                     <div className={s.tip}>{t('datasetCreation.stepTwo.qualifiedTip')}</div>
-                    <div className='pb-0.5 text-xs font-medium text-gray-500'>{t('datasetCreation.stepTwo.emstimateCost')}</div>
+                    <div
+                      className='pb-0.5 text-xs font-medium text-gray-500'>{t('datasetCreation.stepTwo.emstimateCost')}</div>
                     {
                       estimateTokes
                         ? (
-                          <div className='text-xs font-medium text-gray-800'>{formatNumber(estimateTokes.tokens)} tokens(<span className='text-yellow-500'>${formatNumber(estimateTokes.total_price)}</span>)</div>
+                          <div
+                            className='text-xs font-medium text-gray-800'>{formatNumber(estimateTokes.tokens)} tokens(<span
+                              className='text-yellow-500'>${formatNumber(estimateTokes.total_price)}</span>)</div>
                         )
                         : (
                           <div className={s.calculating}>{t('datasetCreation.stepTwo.calculating')}</div>
@@ -685,12 +692,13 @@ const StepTwo = ({
                   )}
                   onClick={changeToEconomicalType}
                 >
-                  <span className={cn(s.typeIcon, s.economical)} />
-                  {!hasSetIndexType && <span className={cn(s.radio)} />}
+                  <span className={cn(s.typeIcon, s.economical)}/>
+                  {!hasSetIndexType && <span className={cn(s.radio)}/>}
                   <div className={s.typeHeader}>
                     <div className={s.title}>{t('datasetCreation.stepTwo.economical')}</div>
                     <div className={s.tip}>{t('datasetCreation.stepTwo.economicalTip')}</div>
-                    <div className='pb-0.5 text-xs font-medium text-gray-500'>{t('datasetCreation.stepTwo.emstimateCost')}</div>
+                    <div
+                      className='pb-0.5 text-xs font-medium text-gray-500'>{t('datasetCreation.stepTwo.emstimateCost')}</div>
                     <div className='text-xs font-medium text-gray-800'>0 tokens</div>
                   </div>
                 </div>
@@ -699,20 +707,22 @@ const StepTwo = ({
             {hasSetIndexType && (
               <div className='mt-2 text-xs text-gray-500 font-medium'>
                 {t('datasetCreation.stepTwo.indexSettedTip')}
-                <Link className='text-[#155EEF]' href={`/datasets/${datasetId}/settings`}>{t('datasetCreation.stepTwo.datasetSettingLink')}</Link>
+                <Link className='text-[#155EEF]'
+                  href={`/datasets/${datasetId}/settings`}>{t('datasetCreation.stepTwo.datasetSettingLink')}</Link>
               </div>
             )}
             {IS_CE_EDITION && indexType === IndexingType.QUALIFIED && (
               <div className='mt-3 rounded-xl bg-gray-50 border border-gray-100'>
                 <div className='flex justify-between items-center px-5 py-4'>
                   <div className='flex justify-center items-center w-8 h-8 rounded-lg bg-indigo-50'>
-                    <MessageChatSquare className='w-4 h-4' />
+                    <MessageChatSquare className='w-4 h-4'/>
                   </div>
                   <div className='grow mx-3'>
-                    <div className='mb-[2px] text-md font-medium text-gray-900'>{t('datasetCreation.stepTwo.QATitle')}</div>
+                    <div
+                      className='mb-[2px] text-md font-medium text-gray-900'>{t('datasetCreation.stepTwo.QATitle')}</div>
                     <div className='inline-flex items-center text-[13px] leading-[18px] text-gray-500'>
                       <span className='pr-1'>{t('datasetCreation.stepTwo.QALanguage')}</span>
-                      <LanguageSelect currentLanguage={docLanguage} onSelect={handleSelect} />
+                      <LanguageSelect currentLanguage={docLanguage} onSelect={handleSelect}/>
                     </div>
                   </div>
                   <div className='shrink-0'>
@@ -724,9 +734,10 @@ const StepTwo = ({
                   </div>
                 </div>
                 {docForm === DocForm.QA && !QATipHide && (
-                  <div className='flex justify-between items-center px-5 py-2 bg-orange-50 border-t border-amber-100 rounded-b-xl text-[13px] leading-[18px] text-medium text-amber-500'>
+                  <div
+                    className='flex justify-between items-center px-5 py-2 bg-orange-50 border-t border-amber-100 rounded-b-xl text-[13px] leading-[18px] text-medium text-amber-500'>
                     {t('datasetCreation.stepTwo.QATip')}
-                    <XClose className='w-4 h-4 text-gray-500 cursor-pointer' onClick={() => setQATipHide(true)} />
+                    <XClose className='w-4 h-4 text-gray-500 cursor-pointer' onClick={() => setQATipHide(true)}/>
                   </div>
                 )}
               </div>
@@ -738,7 +749,9 @@ const StepTwo = ({
                   <div className={s.label}>
                     {t('datasetSettings.form.retrievalSetting.title')}
                     <div className='leading-[18px] text-xs font-normal text-gray-500'>
-                      <a target='_blank' rel='noopener noreferrer' href='https://docs.dify.ai/features/retrieval-augment' className='text-[#155eef]'>{t('datasetSettings.form.retrievalSetting.learnMore')}</a>
+                      <a target='_blank' rel='noopener noreferrer'
+                        href='https://docs.dify.ai/features/retrieval-augment'
+                        className='text-[#155eef]'>{t('datasetSettings.form.retrievalSetting.learnMore')}</a>
                       {t('datasetSettings.form.retrievalSetting.longDescription')}
                     </div>
                   </div>
@@ -773,21 +786,32 @@ const StepTwo = ({
                       />
                       <div className='mt-2 text-xs text-gray-500 font-medium'>
                         {t('datasetCreation.stepTwo.retrivalSettedTip')}
-                        <Link className='text-[#155EEF]' href={`/datasets/${datasetId}/settings`}>{t('datasetCreation.stepTwo.datasetSettingLink')}</Link>
+                        <Link className='text-[#155EEF]'
+                          href={`/datasets/${datasetId}/settings`}>{t('datasetCreation.stepTwo.datasetSettingLink')}</Link>
                       </div>
                     </div>
                   )}
 
               </div>
             </div>
-
+            <div className={s.label}>{t('datasetCreation.stepTwo.dataType')}</div>
+            <div className="flex items-center mt-1">
+              <input
+                type="text"
+                className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:ring-blue-500 focus:border-blue-500"
+                value={dataType}
+                onChange={e => setDataType(e.target.value)}
+                placeholder={t('datasetCreation.stepTwo.dataTypePlaceholder') || ''}
+              />
+            </div>
             <div className={s.source}>
               <div className={s.sourceContent}>
                 {dataSourceType === DataSourceType.FILE && (
                   <>
-                    <div className='mb-2 text-xs font-medium text-gray-500'>{t('datasetCreation.stepTwo.fileSource')}</div>
+                    <div
+                      className='mb-2 text-xs font-medium text-gray-500'>{t('datasetCreation.stepTwo.fileSource')}</div>
                     <div className='flex items-center text-sm leading-6 font-medium text-gray-800'>
-                      <span className={cn(s.fileIcon, files.length && s[files[0].extension || ''])} />
+                      <span className={cn(s.fileIcon, files.length && s[files[0].extension || ''])}/>
                       {getFileName(files[0].name || '')}
                       {files.length > 1 && (
                         <span className={s.sourceCount}>
@@ -801,7 +825,8 @@ const StepTwo = ({
                 )}
                 {dataSourceType === DataSourceType.NOTION && (
                   <>
-                    <div className='mb-2 text-xs font-medium text-gray-500'>{t('datasetCreation.stepTwo.notionSource')}</div>
+                    <div
+                      className='mb-2 text-xs font-medium text-gray-500'>{t('datasetCreation.stepTwo.notionSource')}</div>
                     <div className='flex items-center text-sm leading-6 font-medium text-gray-800'>
                       <NotionIcon
                         className='shrink-0 mr-1'
@@ -820,14 +845,16 @@ const StepTwo = ({
                   </>
                 )}
               </div>
-              <div className={s.divider} />
+              <div className={s.divider}/>
               <div className={s.segmentCount}>
-                <div className='mb-2 text-xs font-medium text-gray-500'>{t('datasetCreation.stepTwo.emstimateSegment')}</div>
+                <div
+                  className='mb-2 text-xs font-medium text-gray-500'>{t('datasetCreation.stepTwo.emstimateSegment')}</div>
                 <div className='flex items-center text-sm leading-6 font-medium text-gray-800'>
                   {
                     fileIndexingEstimate
                       ? (
-                        <div className='text-xs font-medium text-gray-800'>{formatNumber(fileIndexingEstimate.total_segments)} </div>
+                        <div
+                          className='text-xs font-medium text-gray-800'>{formatNumber(fileIndexingEstimate.total_segments)} </div>
                       )
                       : (
                         <div className={s.calculating}>{t('datasetCreation.stepTwo.calculating')}</div>
@@ -839,14 +866,17 @@ const StepTwo = ({
             {!isSetting
               ? (
                 <div className='flex items-center mt-8 py-2'>
-                  <Button onClick={() => onStepChange && onStepChange(-1)}>{t('datasetCreation.stepTwo.previousStep')}</Button>
-                  <div className={s.divider} />
-                  <Button loading={isCreating} type='primary' onClick={createHandle}>{t('datasetCreation.stepTwo.nextStep')}</Button>
+                  <Button
+                    onClick={() => onStepChange && onStepChange(-1)}>{t('datasetCreation.stepTwo.previousStep')}</Button>
+                  <div className={s.divider}/>
+                  <Button loading={isCreating} type='primary'
+                    onClick={createHandle}>{t('datasetCreation.stepTwo.nextStep')}</Button>
                 </div>
               )
               : (
                 <div className='flex items-center mt-8 py-2'>
-                  <Button loading={isCreating} type='primary' onClick={createHandle}>{t('datasetCreation.stepTwo.save')}</Button>
+                  <Button loading={isCreating} type='primary'
+                    onClick={createHandle}>{t('datasetCreation.stepTwo.save')}</Button>
                   <Button className='ml-2' onClick={onCancel}>{t('datasetCreation.stepTwo.cancel')}</Button>
                 </div>
               )}
@@ -854,7 +884,8 @@ const StepTwo = ({
         </div>
       </div>
       <FloatRightContainer isMobile={isMobile} isOpen={showPreview} onClose={hidePreview} footer={null}>
-        {showPreview && <div ref={previewScrollRef} className={cn(s.previewWrap, isMobile && s.isMobile, 'relative h-full overflow-y-scroll border-l border-[#F2F4F7]')}>
+        {showPreview && <div ref={previewScrollRef}
+          className={cn(s.previewWrap, isMobile && s.isMobile, 'relative h-full overflow-y-scroll border-l border-[#F2F4F7]')}>
           <div className={cn(s.previewHeader, previewScrolled && `${s.fixed} pb-3`)}>
             <div className='flex items-center justify-between px-8'>
               <div className='grow flex items-center'>

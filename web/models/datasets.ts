@@ -192,6 +192,7 @@ export type DocumentReq = {
   doc_form: 'text_model' | 'qa_model'
   doc_language: string
   process_rule: ProcessRule
+  data_type: string | '数据类型'
 }
 
 export type CreateDocumentReq = DocumentReq & {

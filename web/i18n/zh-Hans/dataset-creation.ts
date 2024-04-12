@@ -90,6 +90,8 @@ const translation = {
     fileUnit: ' 个文件',
     notionUnit: ' 个页面',
     previousStep: '上一步',
+    dataType: '数据类型',
+    dataTypePlaceholder: '请输入数据的类型',
     nextStep: '保存并处理',
     save: '保存并处理',
     cancel: '取消',
