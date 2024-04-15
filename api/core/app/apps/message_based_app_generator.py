@@ -28,7 +28,7 @@ from extensions.ext_database import db
 from models.account import Account
 from models.model import App, AppMode, AppModelConfig, Conversation, EndUser, Message, MessageFile
 from services.errors.app_model_config import AppModelConfigBrokenError
-from services.errors.conversation import ConversationCompletedError, ConversationNotExistsError
+from services.errors.conversation import ConversationCompletedError
 
 logger = logging.getLogger(__name__)
 
@@ -96,7 +96,8 @@ class MessageBasedAppGenerator(BaseAppGenerator):
         conversation = db.session.query(Conversation).filter(and_(*conversation_filter)).first()
 
         if not conversation:
-            raise ConversationNotExistsError()
+            # raise ConversationNotExistsError()
+            return None
 
         if conversation.status != 'normal':
             raise ConversationCompletedError()
@@ -132,7 +133,7 @@ class MessageBasedAppGenerator(BaseAppGenerator):
                                    AgentChatAppGenerateEntity,
                                    AdvancedChatAppGenerateEntity
                                ],
-                               conversation: Optional[Conversation] = None) \
+                               conversation: Optional[Conversation] = None, conversation_id: Optional[str] = None) \
             -> tuple[Conversation, Message]:
         """
         Initialize generate records
@@ -170,6 +171,7 @@ class MessageBasedAppGenerator(BaseAppGenerator):
 
         if not conversation:
             conversation = Conversation(
+                id=conversation_id,
                 app_id=app_config.app_id,
                 app_model_config_id=app_model_config_id,
                 model_provider=model_provider,

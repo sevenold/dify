@@ -49,8 +49,8 @@ class ChatAppGenerator(MessageBasedAppGenerator):
             raise ValueError('query must be a string')
 
         query = query.replace('\x00', '')
-        inputs = args['inputs']
-
+        inputs = args.get('inputs', {})
+        data_type = eval(args.get('data_type', []))
         extras = {
             "auto_generate_conversation_name": args['auto_generate_name'] if 'auto_generate_name' in args else True
         }
@@ -58,14 +58,15 @@ class ChatAppGenerator(MessageBasedAppGenerator):
         # get conversation
         conversation = None
         if args.get('conversation_id'):
+            conversation_id = args['conversation_id']
             conversation = self._get_conversation_by_user(app_model, args.get('conversation_id'), user)
-
+        else:
+            conversation_id = str(uuid.uuid4())
         # get app model config
         app_model_config = self._get_app_model_config(
             app_model=app_model,
             conversation=conversation
         )
-
         # validate override model config
         override_model_config_dict = None
         if args.get('model_config'):
@@ -98,7 +99,7 @@ class ChatAppGenerator(MessageBasedAppGenerator):
             conversation=conversation,
             override_config_dict=override_model_config_dict
         )
-
+        app_config.dataset.data_type = data_type
         # init application generate entity
         application_generate_entity = ChatAppGenerateEntity(
             task_id=str(uuid.uuid4()),
@@ -118,7 +119,7 @@ class ChatAppGenerator(MessageBasedAppGenerator):
         (
             conversation,
             message
-        ) = self._init_generate_records(application_generate_entity, conversation)
+        ) = self._init_generate_records(application_generate_entity, conversation, conversation_id)
 
         # init queue manager
         queue_manager = MessageBasedAppQueueManager(
