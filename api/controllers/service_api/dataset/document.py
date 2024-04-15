@@ -35,7 +35,8 @@ class DocumentAddByTextApi(DatasetApiResource):
         parser.add_argument('name', type=str, required=True, nullable=False, location='json')
         parser.add_argument('text', type=str, required=True, nullable=False, location='json')
         parser.add_argument('data_type', type=str, required=True, nullable=False, location='json')
-        parser.add_argument('process_rule', type=dict, required=False, nullable=True, location='json')
+        parser.add_argument('process_rule', type=dict, required=False, default={"mode": "automatic"}, nullable=True,
+                            location='json')
         parser.add_argument('original_document_id', type=str, required=False, location='json')
         parser.add_argument('doc_form', type=str, default='text_model', required=False, nullable=False, location='json')
         parser.add_argument('doc_language', type=str, default='Chinese', required=False, nullable=False,
@@ -43,8 +44,7 @@ class DocumentAddByTextApi(DatasetApiResource):
         parser.add_argument('indexing_technique', type=str, choices=Dataset.INDEXING_TECHNIQUE_LIST,
                             default='high_quality', nullable=False,
                             location='json')
-        parser.add_argument('retrieval_model', type=dict, required=False, nullable=False, default={"mode": "automatic"},
-                            location='json')
+        parser.add_argument('retrieval_model', type=dict, required=False, nullable=False, location='json')
         args = parser.parse_args()
         dataset_id = str(dataset_id)
         tenant_id = str(tenant_id)
