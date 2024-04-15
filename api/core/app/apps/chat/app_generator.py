@@ -50,7 +50,7 @@ class ChatAppGenerator(MessageBasedAppGenerator):
 
         query = query.replace('\x00', '')
         inputs = args.get('inputs', {})
-        data_type = eval(args.get('data_type', []))
+        data_type = args.get('data_type', [])
         extras = {
             "auto_generate_conversation_name": args['auto_generate_name'] if 'auto_generate_name' in args else True
         }
