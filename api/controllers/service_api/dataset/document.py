@@ -38,7 +38,7 @@ class DocumentAddByTextApi(DatasetApiResource):
         parser.add_argument('process_rule', type=dict, required=False, nullable=True, location='json')
         parser.add_argument('original_document_id', type=str, required=False, location='json')
         parser.add_argument('doc_form', type=str, default='text_model', required=False, nullable=False, location='json')
-        parser.add_argument('doc_language', type=str, default='English', required=False, nullable=False,
+        parser.add_argument('doc_language', type=str, default='Chinese', required=False, nullable=False,
                             location='json')
         parser.add_argument('indexing_technique', type=str, choices=Dataset.INDEXING_TECHNIQUE_LIST, nullable=False,
                             location='json')
@@ -103,7 +103,7 @@ class DocumentUpdateByTextApi(DatasetApiResource):
         parser.add_argument('data_type', type=str, required=False, nullable=True, location='json')
         parser.add_argument('process_rule', type=dict, required=False, nullable=True, location='json')
         parser.add_argument('doc_form', type=str, default='text_model', required=False, nullable=False, location='json')
-        parser.add_argument('doc_language', type=str, default='English', required=False, nullable=False,
+        parser.add_argument('doc_language', type=str, default='Chinese', required=False, nullable=False,
                             location='json')
         parser.add_argument('retrieval_model', type=dict, required=False, nullable=False,
                             location='json')
@@ -165,7 +165,7 @@ class DocumentAddByFileApi(DatasetApiResource):
         if 'doc_form' not in args:
             args['doc_form'] = 'text_model'
         if 'doc_language' not in args:
-            args['doc_language'] = 'English'
+            args['doc_language'] = 'Chinese'
         # get dataset info
         dataset_id = str(dataset_id)
         tenant_id = str(tenant_id)
@@ -231,7 +231,7 @@ class DocumentUpdateByFileApi(DatasetApiResource):
         if 'doc_form' not in args:
             args['doc_form'] = 'text_model'
         if 'doc_language' not in args:
-            args['doc_language'] = 'English'
+            args['doc_language'] = 'Chinese'
 
         # get dataset info
         dataset_id = str(dataset_id)
