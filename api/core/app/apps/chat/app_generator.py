@@ -51,6 +51,8 @@ class ChatAppGenerator(MessageBasedAppGenerator):
         query = query.replace('\x00', '')
         inputs = args.get('inputs', {})
         data_type = args.get('data_type', [])
+        history = args.get('history', [])
+
         extras = {
             "auto_generate_conversation_name": args['auto_generate_name'] if 'auto_generate_name' in args else True
         }
@@ -138,6 +140,7 @@ class ChatAppGenerator(MessageBasedAppGenerator):
             'queue_manager': queue_manager,
             'conversation_id': conversation.id,
             'message_id': message.id,
+            'history': history
         })
 
         worker_thread.start()
@@ -161,7 +164,8 @@ class ChatAppGenerator(MessageBasedAppGenerator):
                          application_generate_entity: ChatAppGenerateEntity,
                          queue_manager: AppQueueManager,
                          conversation_id: str,
-                         message_id: str) -> None:
+                         message_id: str,
+                         history: list) -> None:
         """
         Generate worker in a new thread.
         :param flask_app: Flask app
@@ -183,7 +187,8 @@ class ChatAppGenerator(MessageBasedAppGenerator):
                     application_generate_entity=application_generate_entity,
                     queue_manager=queue_manager,
                     conversation=conversation,
-                    message=message
+                    message=message,
+                    history=history
                 )
             except GenerateTaskStoppedException:
                 pass

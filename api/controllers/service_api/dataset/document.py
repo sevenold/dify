@@ -40,9 +40,10 @@ class DocumentAddByTextApi(DatasetApiResource):
         parser.add_argument('doc_form', type=str, default='text_model', required=False, nullable=False, location='json')
         parser.add_argument('doc_language', type=str, default='Chinese', required=False, nullable=False,
                             location='json')
-        parser.add_argument('indexing_technique', type=str, choices=Dataset.INDEXING_TECHNIQUE_LIST, nullable=False,
+        parser.add_argument('indexing_technique', type=str, choices=Dataset.INDEXING_TECHNIQUE_LIST,
+                            default='high_quality', nullable=False,
                             location='json')
-        parser.add_argument('retrieval_model', type=dict, required=False, nullable=False,
+        parser.add_argument('retrieval_model', type=dict, required=False, nullable=False, default={"mode": "automatic"},
                             location='json')
         args = parser.parse_args()
         dataset_id = str(dataset_id)
@@ -155,6 +156,7 @@ class DocumentUpdateByTextApi(DatasetApiResource):
 
 class DocumentAddByFileApi(DatasetApiResource):
     """Resource for documents."""
+
     @cloud_edition_billing_resource_check('vector_space', 'dataset')
     @cloud_edition_billing_resource_check('documents', 'dataset')
     def post(self, tenant_id, dataset_id):
@@ -246,7 +248,6 @@ class DocumentUpdateByFileApi(DatasetApiResource):
         if 'file' in request.files:
             # save file info
             file = request.files['file']
-
 
             if len(request.files) > 1:
                 raise TooManyFilesError()
