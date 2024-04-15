@@ -100,6 +100,7 @@ class DocumentUpdateByTextApi(DatasetApiResource):
         parser = reqparse.RequestParser()
         parser.add_argument('name', type=str, required=False, nullable=True, location='json')
         parser.add_argument('text', type=str, required=False, nullable=True, location='json')
+        parser.add_argument('data_type', type=str, required=False, nullable=True, location='json')
         parser.add_argument('process_rule', type=dict, required=False, nullable=True, location='json')
         parser.add_argument('doc_form', type=str, default='text_model', required=False, nullable=False, location='json')
         parser.add_argument('doc_language', type=str, default='English', required=False, nullable=False,
