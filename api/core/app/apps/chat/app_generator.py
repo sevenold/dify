@@ -101,7 +101,8 @@ class ChatAppGenerator(MessageBasedAppGenerator):
             conversation=conversation,
             override_config_dict=override_model_config_dict
         )
-        app_config.dataset.data_type = data_type
+        if app_config.dataset:
+            app_config.dataset.data_type = data_type
         # init application generate entity
         application_generate_entity = ChatAppGenerateEntity(
             task_id=str(uuid.uuid4()),
