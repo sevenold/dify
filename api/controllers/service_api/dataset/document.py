@@ -117,6 +117,12 @@ class DocumentUpdateByTextApi(DatasetApiResource):
         args = parser.parse_args()
         dataset_id = str(dataset_id)
         tenant_id = str(tenant_id)
+        if args['data_type'] == '调证指南':
+            args['process_rule'] = {"rules": {"pre_processing_rules": [{"id": "remove_extra_spaces", "enabled": True},
+                                                                       {"id": "remove_urls_emails", "enabled": False}],
+                                              "segmentation": {"separator": "****", "max_tokens": 1000,
+                                                               "chunk_overlap": 50}}, "mode": "custom"}
+        args['text'] = f"{args['name']}\n{args['text']}"
         dataset = db.session.query(Dataset).filter(
             Dataset.tenant_id == tenant_id,
             Dataset.id == dataset_id
