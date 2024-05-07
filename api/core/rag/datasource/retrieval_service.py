@@ -25,7 +25,7 @@ class RetrievalService:
 
     @classmethod
     def retrieve(cls, retrival_method: str, dataset_id: str, query: str,
-                 top_k: int, data_type: list[str], score_threshold: Optional[float] = .0, reranking_model: Optional[dict] = None):
+                 top_k: int, data_type: list[str] = None, score_threshold: Optional[float] = .0, reranking_model: Optional[dict] = None):
         dataset = db.session.query(Dataset).filter(
             Dataset.id == dataset_id
         ).first()
