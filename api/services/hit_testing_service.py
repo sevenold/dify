@@ -66,7 +66,6 @@ class HitTestingService:
                                                   reranking_model=retrieval_model['reranking_model']
                                                   if retrieval_model['reranking_enable'] else None
                                                   )
-
         end = time.perf_counter()
         logging.debug(f"Hit testing retrieve in {end - start:0.4f} seconds")
 
@@ -110,6 +109,8 @@ class HitTestingService:
             if not segment:
                 i += 1
                 continue
+
+            segment.content = document.page_content
 
             record = {
                 "segment": segment,

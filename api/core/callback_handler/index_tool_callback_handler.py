@@ -62,6 +62,8 @@ class DatasetIndexToolCallbackHandler:
         """Handle return_retriever_resource_info."""
         if resource and len(resource) > 0:
             for item in resource:
+                # acc = item.get('score') if 'score' in item else None
+                # if acc and acc > 0.9:
                 dataset_retriever_resource = DatasetRetrieverResource(
                     message_id=self._message_id,
                     position=item.get('position'),

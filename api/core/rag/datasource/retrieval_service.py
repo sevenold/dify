@@ -7,7 +7,7 @@ from core.rag.data_post_processor.data_post_processor import DataPostProcessor
 from core.rag.datasource.keyword.keyword_factory import Keyword
 from core.rag.datasource.vdb.vector_factory import Vector
 from extensions.ext_database import db
-from models.dataset import Dataset
+from models.dataset import Dataset, DocumentSegment
 
 default_retrieval_model = {
     'search_method': 'semantic_search',
@@ -23,9 +23,49 @@ default_retrieval_model = {
 
 class RetrievalService:
 
+    @staticmethod
+    def get_document_by_id(dataset_id: str, document_id: str, doc_id: str, length: int = 4*1024, content_range: int = 5) -> Optional[str]:
+        word_count = db.session.query(db.func.sum(DocumentSegment.word_count)).filter(
+            DocumentSegment.dataset_id == dataset_id,
+            DocumentSegment.document_id == document_id
+        ).scalar()
+
+        document = db.session.query(DocumentSegment.position, DocumentSegment.content).filter(
+            DocumentSegment.dataset_id == dataset_id,
+            DocumentSegment.document_id == document_id
+        ).order_by(DocumentSegment.position).all()
+        merge_document = '\n'.join([d.content for d in document])
+        if word_count > length:
+            merge_document = ''
+            current_length = 0
+            doc_position = db.session.query(DocumentSegment.position).filter(
+                DocumentSegment.dataset_id == dataset_id,
+                DocumentSegment.document_id == document_id,
+                DocumentSegment.index_node_id == doc_id
+            ).scalar()
+            if doc_position <= content_range:
+                for d in document:
+                    document_length = len(d.content)
+                    if current_length + document_length <= length:
+                        merge_document += d.content + '\n'
+                        current_length += document_length
+                    else:
+                        break
+            else:
+                start_index = max(doc_position - content_range, 0)
+                end_index = min(doc_position + content_range, len(document))
+                for d in document[start_index: end_index]:
+                    if current_length + len(d.content) <= length:
+                        merge_document += d.content + '\n'
+                        current_length += len(d.content)
+                    else:
+                        break
+        return merge_document
+
     @classmethod
     def retrieve(cls, retrival_method: str, dataset_id: str, query: str,
-                 top_k: int, data_type: list[str] = None, score_threshold: Optional[float] = .0, reranking_model: Optional[dict] = None):
+                 top_k: int, data_type: list[str] = None, score_threshold: Optional[float] = .0,
+                 reranking_model: Optional[dict] = None):
         dataset = db.session.query(Dataset).filter(
             Dataset.id == dataset_id
         ).first()
@@ -86,6 +126,11 @@ class RetrievalService:
                 score_threshold=score_threshold,
                 top_n=top_k
             )
+
+        for doc in all_documents:
+            document_id = doc.metadata['document_id']
+            doc_id = doc.metadata['doc_id']
+            doc.page_content = cls.get_document_by_id(dataset_id, document_id, doc_id)
         return all_documents
 
     @classmethod

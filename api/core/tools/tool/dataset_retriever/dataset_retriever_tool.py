@@ -106,7 +106,10 @@ class DatasetRetrieverTool(BaseTool):
                                                     DocumentSegment.enabled == True,
                                                     DocumentSegment.index_node_id.in_(index_node_ids)
                                                     ).all()
-
+            segment_dict = {segment.document_id: segment for segment in segments}
+            for doc in documents:
+                if segment := segment_dict.get(doc.metadata['document_id']):
+                    segment.content = doc.page_content
             if segments:
                 index_node_id_to_position = {id: position for position, id in enumerate(index_node_ids)}
                 sorted_segments = sorted(segments,
