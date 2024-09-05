@@ -511,8 +511,10 @@ class DocumentService:
                         'retrieval_model') else default_retrieval_model
 
         documents = []
+        document = DocumentService.get_document(dataset.id, document_data["original_document_id"])
         batch = time.strftime('%Y%m%d%H%M%S') + str(random.randint(100000, 999999))
-        if 'original_document_id' in document_data and document_data["original_document_id"]:
+        if 'original_document_id' in document_data and document_data["original_document_id"] and document.display_status == 'available':
+            # 失败数据当作新数据录入
             document = DocumentService.update_document_with_dataset_id(dataset, document_data, account)
             documents.append(document)
         else:

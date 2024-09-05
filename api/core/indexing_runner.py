@@ -42,9 +42,69 @@ class IndexingRunner:
         self.storage = storage
         self.model_manager = ModelManager()
 
+    # 失败任务重试
     def run(self, dataset_documents: list[DatasetDocument]):
         """Run the indexing process."""
         for dataset_document in dataset_documents:
+            retry = 0
+            while retry < 5:
+                try:
+                    # get dataset
+                    dataset = Dataset.query.filter_by(
+                        id=dataset_document.dataset_id
+                    ).first()
+
+                    if not dataset:
+                        raise ValueError("no dataset found")
+
+                    # get the process rule
+                    processing_rule = db.session.query(DatasetProcessRule). \
+                        filter(DatasetProcessRule.id == dataset_document.dataset_process_rule_id). \
+                        first()
+                    index_type = dataset_document.doc_form
+                    index_processor = IndexProcessorFactory(index_type).init_index_processor()
+                    # extract
+                    text_docs = self._extract(index_processor, dataset_document, processing_rule.to_dict())
+
+                    # transform
+                    documents = self._transform(index_processor, dataset, text_docs, dataset_document.doc_language,
+                                                processing_rule.to_dict())
+                    # save segment
+                    self._load_segments(dataset, dataset_document, documents)
+
+                    # load
+                    self._load(
+                        index_processor=index_processor,
+                        dataset=dataset,
+                        dataset_document=dataset_document,
+                        documents=documents
+                    )
+                    break
+                except DocumentIsPausedException:
+                    raise DocumentIsPausedException('Document paused, document id: {}'.format(dataset_document.id))
+                except ProviderTokenNotInitError as e:
+                    dataset_document.indexing_status = 'error'
+                    dataset_document.error = str(e.description)
+                    dataset_document.stopped_at = datetime.datetime.utcnow()
+                    db.session.commit()
+                    retry += 1
+                    time.sleep(5)
+                except ObjectDeletedError:
+                    logging.warning('Document deleted, document id: {}'.format(dataset_document.id))
+                    break
+                except Exception as e:
+                    logging.exception("consume document failed")
+                    dataset_document.indexing_status = 'error'
+                    dataset_document.error = str(e)
+                    dataset_document.stopped_at = datetime.datetime.utcnow()
+                    db.session.commit()
+                    retry += 1
+                    time.sleep(5)
+
+    def run_in_splitting_status(self, dataset_document: DatasetDocument):
+        """Run the indexing process when the index_status is splitting."""
+        retry = 0
+        while retry < 5:
             try:
                 # get dataset
                 dataset = Dataset.query.filter_by(
@@ -54,10 +114,20 @@ class IndexingRunner:
                 if not dataset:
                     raise ValueError("no dataset found")
 
+                # get exist document_segment list and delete
+                document_segments = DocumentSegment.query.filter_by(
+                    dataset_id=dataset.id,
+                    document_id=dataset_document.id
+                ).all()
+
+                for document_segment in document_segments:
+                    db.session.delete(document_segment)
+                db.session.commit()
                 # get the process rule
                 processing_rule = db.session.query(DatasetProcessRule). \
                     filter(DatasetProcessRule.id == dataset_document.dataset_process_rule_id). \
                     first()
+
                 index_type = dataset_document.doc_form
                 index_processor = IndexProcessorFactory(index_type).init_index_processor()
                 # extract
@@ -76,6 +146,7 @@ class IndexingRunner:
                     dataset_document=dataset_document,
                     documents=documents
                 )
+                break
             except DocumentIsPausedException:
                 raise DocumentIsPausedException('Document paused, document id: {}'.format(dataset_document.id))
             except ProviderTokenNotInitError as e:
@@ -83,133 +154,85 @@ class IndexingRunner:
                 dataset_document.error = str(e.description)
                 dataset_document.stopped_at = datetime.datetime.utcnow()
                 db.session.commit()
-            except ObjectDeletedError:
-                logging.warning('Document deleted, document id: {}'.format(dataset_document.id))
+                retry += 1
+                time.sleep(5)
             except Exception as e:
                 logging.exception("consume document failed")
                 dataset_document.indexing_status = 'error'
                 dataset_document.error = str(e)
                 dataset_document.stopped_at = datetime.datetime.utcnow()
                 db.session.commit()
-
-    def run_in_splitting_status(self, dataset_document: DatasetDocument):
-        """Run the indexing process when the index_status is splitting."""
-        try:
-            # get dataset
-            dataset = Dataset.query.filter_by(
-                id=dataset_document.dataset_id
-            ).first()
-
-            if not dataset:
-                raise ValueError("no dataset found")
-
-            # get exist document_segment list and delete
-            document_segments = DocumentSegment.query.filter_by(
-                dataset_id=dataset.id,
-                document_id=dataset_document.id
-            ).all()
-
-            for document_segment in document_segments:
-                db.session.delete(document_segment)
-            db.session.commit()
-            # get the process rule
-            processing_rule = db.session.query(DatasetProcessRule). \
-                filter(DatasetProcessRule.id == dataset_document.dataset_process_rule_id). \
-                first()
-
-            index_type = dataset_document.doc_form
-            index_processor = IndexProcessorFactory(index_type).init_index_processor()
-            # extract
-            text_docs = self._extract(index_processor, dataset_document, processing_rule.to_dict())
-
-            # transform
-            documents = self._transform(index_processor, dataset, text_docs, dataset_document.doc_language,
-                                        processing_rule.to_dict())
-            # save segment
-            self._load_segments(dataset, dataset_document, documents)
-
-            # load
-            self._load(
-                index_processor=index_processor,
-                dataset=dataset,
-                dataset_document=dataset_document,
-                documents=documents
-            )
-        except DocumentIsPausedException:
-            raise DocumentIsPausedException('Document paused, document id: {}'.format(dataset_document.id))
-        except ProviderTokenNotInitError as e:
-            dataset_document.indexing_status = 'error'
-            dataset_document.error = str(e.description)
-            dataset_document.stopped_at = datetime.datetime.utcnow()
-            db.session.commit()
-        except Exception as e:
-            logging.exception("consume document failed")
-            dataset_document.indexing_status = 'error'
-            dataset_document.error = str(e)
-            dataset_document.stopped_at = datetime.datetime.utcnow()
-            db.session.commit()
+                retry += 1
+                time.sleep(5)
 
     def run_in_indexing_status(self, dataset_document: DatasetDocument):
         """Run the indexing process when the index_status is indexing."""
-        try:
-            # get dataset
-            dataset = Dataset.query.filter_by(
-                id=dataset_document.dataset_id
-            ).first()
+        retry = 0
+        while retry < 5:
+            try:
+                # get dataset
+                dataset = Dataset.query.filter_by(
+                    id=dataset_document.dataset_id
+                ).first()
 
-            if not dataset:
-                raise ValueError("no dataset found")
+                if not dataset:
+                    raise ValueError("no dataset found")
 
-            # get exist document_segment list and delete
-            document_segments = DocumentSegment.query.filter_by(
-                dataset_id=dataset.id,
-                document_id=dataset_document.id
-            ).all()
+                # get exist document_segment list and delete
+                document_segments = DocumentSegment.query.filter_by(
+                    dataset_id=dataset.id,
+                    document_id=dataset_document.id
+                ).all()
 
-            documents = []
-            if document_segments:
-                for document_segment in document_segments:
-                    # transform segment to node
-                    if document_segment.status != "completed":
-                        document = Document(
-                            page_content=document_segment.content,
-                            metadata={
-                                "doc_id": document_segment.index_node_id,
-                                "doc_hash": document_segment.index_node_hash,
-                                "document_id": document_segment.document_id,
-                                "dataset_id": document_segment.dataset_id,
-                            }
-                        )
+                documents = []
+                if document_segments:
+                    for document_segment in document_segments:
+                        # transform segment to node
+                        if document_segment.status != "completed":
+                            document = Document(
+                                page_content=document_segment.content,
+                                metadata={
+                                    "doc_id": document_segment.index_node_id,
+                                    "doc_hash": document_segment.index_node_hash,
+                                    "document_id": document_segment.document_id,
+                                    "dataset_id": document_segment.dataset_id,
+                                }
+                            )
 
-                        documents.append(document)
+                            documents.append(document)
 
-            # build index
-            # get the process rule
-            processing_rule = db.session.query(DatasetProcessRule). \
-                filter(DatasetProcessRule.id == dataset_document.dataset_process_rule_id). \
-                first()
+                # build index
+                # get the process rule
+                processing_rule = db.session.query(DatasetProcessRule). \
+                    filter(DatasetProcessRule.id == dataset_document.dataset_process_rule_id). \
+                    first()
 
-            index_type = dataset_document.doc_form
-            index_processor = IndexProcessorFactory(index_type).init_index_processor()
-            self._load(
-                index_processor=index_processor,
-                dataset=dataset,
-                dataset_document=dataset_document,
-                documents=documents
-            )
-        except DocumentIsPausedException:
-            raise DocumentIsPausedException('Document paused, document id: {}'.format(dataset_document.id))
-        except ProviderTokenNotInitError as e:
-            dataset_document.indexing_status = 'error'
-            dataset_document.error = str(e.description)
-            dataset_document.stopped_at = datetime.datetime.utcnow()
-            db.session.commit()
-        except Exception as e:
-            logging.exception("consume document failed")
-            dataset_document.indexing_status = 'error'
-            dataset_document.error = str(e)
-            dataset_document.stopped_at = datetime.datetime.utcnow()
-            db.session.commit()
+                index_type = dataset_document.doc_form
+                index_processor = IndexProcessorFactory(index_type).init_index_processor()
+                self._load(
+                    index_processor=index_processor,
+                    dataset=dataset,
+                    dataset_document=dataset_document,
+                    documents=documents
+                )
+                break
+            except DocumentIsPausedException:
+                raise DocumentIsPausedException('Document paused, document id: {}'.format(dataset_document.id))
+            except ProviderTokenNotInitError as e:
+                dataset_document.indexing_status = 'error'
+                dataset_document.error = str(e.description)
+                dataset_document.stopped_at = datetime.datetime.utcnow()
+                db.session.commit()
+                retry += 1
+                time.sleep(5)
+            except Exception as e:
+                logging.exception("consume document failed")
+                dataset_document.indexing_status = 'error'
+                dataset_document.error = str(e)
+                dataset_document.stopped_at = datetime.datetime.utcnow()
+                db.session.commit()
+                retry += 1
+                time.sleep(5)
 
     def indexing_estimate(self, tenant_id: str, extract_settings: list[ExtractSetting], tmp_processing_rule: dict,
                           doc_form: str = None, doc_language: str = 'English', dataset_id: str = None,
