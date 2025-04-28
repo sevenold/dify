@@ -6,6 +6,7 @@ class Field(Enum):
     METADATA_KEY = "metadata"
     GROUP_KEY = "group_id"
     VECTOR = "vector"
+    DOC_TYPE = "doc_type"
     # Sparse Vector aims to support full text search
     SPARSE_VECTOR = "sparse_vector"
     TEXT_KEY = "text"

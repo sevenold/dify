@@ -128,6 +128,7 @@ class MilvusVector(BaseVector):
                 Field.CONTENT_KEY.value: documents[i].page_content,
                 Field.VECTOR.value: embeddings[i],
                 Field.METADATA_KEY.value: documents[i].metadata,
+                Field.DOC_TYPE.value: documents[i].doc_type,
             }
             insert_dict_list.append(insert_dict)
         # Total insert count
@@ -226,15 +227,41 @@ class MilvusVector(BaseVector):
 
         return docs
 
-    def search_by_vector(self, query_vector: list[float], **kwargs: Any) -> list[Document]:
+    def get_doc_type(self):
+        expr = 'doc_type != "None"'
+        result = self._client.query(
+            filter=expr,
+            output_fields=["doc_type"],
+            consistency_level="Session",
+            collection_name=self._collection_name
+        )
+        return list({_["doc_type"] for _ in result})    
+
+
+    def search_by_vector(self, 
+                         query_vector: list[float], 
+                         doc_type: Optional[str] = None, 
+                         **kwargs: Any) -> list[Document]:
         """
         Search for documents by vector similarity.
         """
-        document_ids_filter = kwargs.get("document_ids_filter")
         filter = ""
+        document_ids_filter = kwargs.get("document_ids_filter")
+
+        if doc_type:
+            exist_doc_type = self.get_doc_type()
+            _doc_type = [_ for _ in doc_type if _ in exist_doc_type]
+            if _doc_type:
+                _type = [f"{_}" for _ in _doc_type]
+                filter = f"doc_type in {_type}"
+
         if document_ids_filter:
             document_ids = ", ".join(f'"{id}"' for id in document_ids_filter)
-            filter = f'metadata["document_id"] in [{document_ids}]'
+            if filter:
+                filter = f'metadata["document_id"] in [{document_ids}] && {filter}'
+            else:
+                filter = f'metadata["document_id"] in [{document_ids}]'
+
         results = self._client.search(
             collection_name=self._collection_name,
             data=[query_vector],
@@ -250,7 +277,7 @@ class MilvusVector(BaseVector):
             score_threshold=float(kwargs.get("score_threshold") or 0.0),
         )
 
-    def search_by_full_text(self, query: str, **kwargs: Any) -> list[Document]:
+    def search_by_full_text(self, query: str, doc_type: Optional[str] = None, **kwargs: Any) -> list[Document]:
         """
         Search for documents by full-text search (if hybrid search is enabled).
         """
@@ -259,9 +286,19 @@ class MilvusVector(BaseVector):
             return []
         document_ids_filter = kwargs.get("document_ids_filter")
         filter = ""
+        if doc_type:
+            exist_doc_type = self.get_doc_type()
+            _doc_type = [_ for _ in doc_type if _ in exist_doc_type]
+            if _doc_type:
+                _type = [f"{_}" for _ in _doc_type]
+                filter = f"doc_type in {_type}"
+
         if document_ids_filter:
             document_ids = ", ".join(f"'{id}'" for id in document_ids_filter)
-            filter = f'metadata["document_id"] in [{document_ids}]'
+            if filter:
+                filter = f'metadata["document_id"] in [{document_ids}] && {filter}'
+            else:
+                filter = f'metadata["document_id"] in [{document_ids}]'
 
         results = self._client.search(
             collection_name=self._collection_name,
@@ -314,7 +351,10 @@ class MilvusVector(BaseVector):
                     content_field_kwargs["analyzer_params"] = self._client_config.analyzer_params
 
                 fields.append(FieldSchema(Field.CONTENT_KEY.value, DataType.VARCHAR, **content_field_kwargs))
-
+                # Create the data type field
+                fields.append(
+                    FieldSchema(Field.DOC_TYPE.value, DataType.VARCHAR, max_length=65_535)
+                )
                 # Create the primary key field
                 fields.append(FieldSchema(Field.PRIMARY_KEY.value, DataType.INT64, is_primary=True, auto_id=True))
                 # Create the vector field, supports binary or float vectors
