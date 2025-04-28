@@ -1026,6 +1026,8 @@ class DocumentService:
                                 document.data_source_info = json.dumps(data_source_info)
                                 document.batch = batch
                                 document.indexing_status = "waiting"
+                                if knowledge_config.doc_type:
+                                    document.doc_type = knowledge_config.doc_type
                                 db.session.add(document)
                                 documents.append(document)
                                 duplicate_document_ids.append(document.id)
@@ -1042,6 +1044,7 @@ class DocumentService:
                             account,
                             file_name,
                             batch,
+                            knowledge_config.doc_type,
                         )
                         db.session.add(document)
                         db.session.flush()
@@ -1099,6 +1102,7 @@ class DocumentService:
                                     account,
                                     truncated_page_name,
                                     batch,
+                                    knowledge_config.doc_type,
                                 )
                                 db.session.add(document)
                                 db.session.flush()
@@ -1139,6 +1143,7 @@ class DocumentService:
                             account,
                             document_name,
                             batch,
+                            knowledge_config.doc_type,
                         )
                         db.session.add(document)
                         db.session.flush()
@@ -1176,6 +1181,7 @@ class DocumentService:
         account: Account,
         name: str,
         batch: str,
+        doc_type: Optional[str] = None,
     ):
         document = Document(
             tenant_id=dataset.tenant_id,
@@ -1190,6 +1196,7 @@ class DocumentService:
             created_by=account.id,
             doc_form=document_form,
             doc_language=document_language,
+            doc_type=doc_type,
         )
         doc_metadata = {}
         if dataset.built_in_field_enabled:
@@ -1199,6 +1206,7 @@ class DocumentService:
                 BuiltInField.upload_date: datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%d %H:%M:%S"),
                 BuiltInField.last_update_date: datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%d %H:%M:%S"),
                 BuiltInField.source: data_source_type,
+                BuiltInField.doc_type: doc_type,
             }
         if doc_metadata:
             document.doc_metadata = doc_metadata
@@ -1324,6 +1332,8 @@ class DocumentService:
         document.updated_at = datetime.datetime.now(datetime.UTC).replace(tzinfo=None)
         document.created_from = created_from
         document.doc_form = document_data.doc_form
+        if document_data.doc_type:
+            document.doc_type = document_data.doc_type
         db.session.add(document)
         db.session.commit()
         # update document segment

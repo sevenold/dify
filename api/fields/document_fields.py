@@ -32,6 +32,7 @@ document_fields = {
     "word_count": fields.Integer,
     "hit_count": fields.Integer,
     "doc_form": fields.String,
+    "doc_type": fields.String,
     "doc_metadata": fields.List(fields.Nested(document_metadata_fields), attribute="doc_metadata_details"),
 }
 
@@ -81,6 +82,7 @@ document_status_fields = {
     "stopped_at": TimestampField,
     "completed_segments": fields.Integer,
     "total_segments": fields.Integer,
+    "doc_type": fields.String,
 }
 
 document_status_fields_list = {"data": fields.List(fields.Nested(document_status_fields))}

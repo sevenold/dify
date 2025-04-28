@@ -7,7 +7,7 @@ class BuiltInField(StrEnum):
     upload_date = "upload_date"
     last_update_date = "last_update_date"
     source = "source"
-
+    doc_type = "doc_type"
 
 class MetadataDataSource(Enum):
     upload_file = "file_upload"

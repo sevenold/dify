@@ -40,6 +40,7 @@ class DocumentAddByTextApi(DatasetApiResource):
         parser = reqparse.RequestParser()
         parser.add_argument("name", type=str, required=True, nullable=False, location="json")
         parser.add_argument("text", type=str, required=True, nullable=False, location="json")
+        parser.add_argument('doc_type', type=str, required=True, nullable=False, location='json')
         parser.add_argument("process_rule", type=dict, required=False, nullable=True, location="json")
         parser.add_argument("original_document_id", type=str, required=False, location="json")
         parser.add_argument("doc_form", type=str, default="text_model", required=False, nullable=False, location="json")
@@ -104,6 +105,7 @@ class DocumentUpdateByTextApi(DatasetApiResource):
         parser = reqparse.RequestParser()
         parser.add_argument("name", type=str, required=False, nullable=True, location="json")
         parser.add_argument("text", type=str, required=False, nullable=True, location="json")
+        parser.add_argument('doc_type', type=str, required=True, nullable=False, location='json')
         parser.add_argument("process_rule", type=dict, required=False, nullable=True, location="json")
         parser.add_argument("doc_form", type=str, default="text_model", required=False, nullable=False, location="json")
         parser.add_argument(
@@ -166,7 +168,9 @@ class DocumentAddByFileApi(DatasetApiResource):
         if "doc_form" not in args:
             args["doc_form"] = "text_model"
         if "doc_language" not in args:
-            args["doc_language"] = "English"
+            args["doc_language"] = "Chinese"
+        if "doc_type" not in args:
+            args["doc_type"] = None
 
         # get dataset info
         dataset_id = str(dataset_id)
@@ -233,7 +237,9 @@ class DocumentUpdateByFileApi(DatasetApiResource):
         if "doc_form" not in args:
             args["doc_form"] = "text_model"
         if "doc_language" not in args:
-            args["doc_language"] = "English"
+            args["doc_language"] = "Chinese"
+        if "doc_type" not in args:
+            args["doc_type"] = None
 
         # get dataset info
         dataset_id = str(dataset_id)
