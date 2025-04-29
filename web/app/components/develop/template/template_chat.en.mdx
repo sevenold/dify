@@ -45,6 +45,17 @@ Chat applications support session persistence, allowing previous chat history to
       <Property name='query' type='string' key='query'>
         User Input/Question content
       </Property>
+      <Property name='doc_type' type='array[string]' key='doc_type'>
+        Document type filter, used to specify which types of documents to retrieve information from. Pass an array of strings, where each string represents a document type. If not passed or an empty array is passed, all document types will be searched. Default is empty array `[]`
+      </Property>
+      <Property name='history' type='array[object]' key='history'>
+        Conversation history, used to provide dialogue context. Each object in the array contains the following fields:
+        - `role` (string) Message role, possible values:
+          - `user` User message
+          - `assistant` AI assistant message
+        - `content` (string) Message content
+        Default is empty array `[]`
+      </Property>
       <Property name='inputs' type='object' key='inputs'>
           Allows the entry of various variable values defined by the App.
           The `inputs` parameter contains multiple key/value pairs, with each key corresponding to a specific variable and each value being the specific value for that variable. Default `{}`
@@ -180,7 +191,7 @@ Chat applications support session persistence, allowing previous chat history to
   </Col>
   <Col sticky>
 
-    <CodeGroup title="Request" tag="POST" label="/chat-messages" targetCode={`curl -X POST '${props.appDetail.api_base_url}/chat-messages' \\\n--header 'Authorization: Bearer {api_key}' \\\n--header 'Content-Type: application/json' \\\n--data-raw '{\n    "inputs": ${JSON.stringify(props.inputs)},\n    "query": "What are the specs of the iPhone 13 Pro Max?",\n    "response_mode": "streaming",\n    "conversation_id": "",\n    "user": "abc-123",\n    "files": [\n      {\n        "type": "image",\n        "transfer_method": "remote_url",\n        "url": "https://cloud.dify.ai/logo/logo-site.png"\n      }\n    ]\n}'`}>
+    <CodeGroup title="Request" tag="POST" label="/chat-messages" targetCode={`curl -X POST '${props.appDetail.api_base_url}/chat-messages' \\\n--header 'Authorization: Bearer {api_key}' \\\n--header 'Content-Type: application/json' \\\n--data-raw '{\n    "inputs": ${JSON.stringify(props.inputs)},\n    "query": "What are the specs of the iPhone 13 Pro Max?",\n    "response_mode": "streaming",\n    "conversation_id": "",\n    "user": "abc-123",\n    "doc_type": ["product_manual", "tech_specs"],\n    "history": [\n      {"role": "user", "content": "Tell me about iPhone models"},\n      {"role": "assistant", "content": "I can help you with information about iPhone models. What would you like to know?"}\n    ],\n    "files": [\n      {\n        "type": "image",\n        "transfer_method": "remote_url",\n        "url": "https://cloud.dify.ai/logo/logo-site.png"\n      }\n    ]\n}'`}>
 
     ```bash {{ title: 'cURL' }}
     curl -X POST '${props.appDetail.api_base_url}/chat-messages' \
@@ -188,10 +199,22 @@ Chat applications support session persistence, allowing previous chat history to
     --header 'Content-Type: application/json' \
     --data-raw '{
         "inputs": {},
-        "query": "eh",
+        "query": "What are the specs of the iPhone 13 Pro Max?",
+        "conversation_id": "101b4c97-fc2e-463c-90b1-5261a4cdcafb",
         "response_mode": "streaming",
-        "conversation_id": "1c7e55fb-1ba2-4e10-81b5-30addcea2276",
-        "user": "abc-123"
+        "user": "abc-123",
+        "doc_type": ["product_manual", "tech_specs"],
+        "history": [
+          {"role": "user", "content": "Tell me about iPhone models"},
+          {"role": "assistant", "content": "I can help you with information about iPhone models. What would you like to know?"}
+        ],
+        "files": [
+          {
+            "type": "image",
+            "transfer_method": "remote_url",
+            "url": "https://cloud.dify.ai/logo/logo-site.png"
+          }
+        ]
     }'
     ```
     </CodeGroup>

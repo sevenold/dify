@@ -43,6 +43,17 @@ import { Row, Col, Properties, Property, Heading, SubProperty } from '../md.tsx'
       <Property name='query' type='string' key='query'>
         用户输入/提问内容。
       </Property>
+      <Property name='doc_type' type='array[string]' key='doc_type'>
+        文档类型过滤，用于指定从哪些类型的文档中检索信息。传入一个字符串数组，每个字符串代表一个文档类型。如果不传或传空数组则检索所有类型文档。默认为空数组 `[]`
+      </Property>
+      <Property name='history' type='array[object]' key='history'>
+        历史对话记录，用于提供对话上下文。数组中的每个对象包含以下字段：
+        - `role` (string) 消息角色，可选值：
+          - `user` 用户消息
+          - `assistant` AI助手消息
+        - `content` (string) 消息内容
+        默认为空数组 `[]`
+      </Property>
       <Property name='inputs' type='object' key='inputs'>
         允许传入 App 定义的各变量值。
         inputs 参数包含了多组键值对（Key/Value pairs），每组的键对应一个特定变量，每组的值则是该变量的具体值。
@@ -182,7 +193,7 @@ import { Row, Col, Properties, Property, Heading, SubProperty } from '../md.tsx'
   </Col>
   <Col sticky>
 
-    <CodeGroup title="Request" tag="POST" label="/chat-messages" targetCode={`curl -X POST '${props.appDetail.api_base_url}/chat-messages' \\\n--header 'Authorization: Bearer {api_key}' \\\n--header 'Content-Type: application/json' \\\n--data-raw '{\n    "inputs": ${JSON.stringify(props.inputs)},\n    "query": "What are the specs of the iPhone 13 Pro Max?",\n    "response_mode": "streaming",\n    "conversation_id": "",\n    "user": "abc-123",\n    "files": [\n      {\n        "type": "image",\n        "transfer_method": "remote_url",\n        "url": "https://cloud.dify.ai/logo/logo-site.png"\n      }\n    ]\n}'`}>
+    <CodeGroup title="Request" tag="POST" label="/chat-messages" targetCode={`curl -X POST '${props.appDetail.api_base_url}/chat-messages' \\\n--header 'Authorization: Bearer {api_key}' \\\n--header 'Content-Type: application/json' \\\n--data-raw '{\n    "inputs": ${JSON.stringify(props.inputs)},\n    "query": "满月瓜是什么",\n    "response_mode": "streaming",\n    "conversation_id": "101b4c97-fc2e-463c-90b1-5261a4cdcafb",\n    "user": "abc-123",\n    "doc_type": ["术语黑话"],\n    "history": [\n      {"role": "user", "content": "满月瓜是什么"},\n      {"role": "assistant", "content": "满月瓜指的是注册时间达到一个月的账号。"}\n    ],\n    "files": [\n      {\n        "type": "image",\n        "transfer_method": "remote_url",\n        "url": "https://cloud.dify.ai/logo/logo-site.png"\n      }\n    ]\n}'`}>
 
     ```bash {{ title: 'cURL' }}
     curl -X POST '${props.appDetail.api_base_url}/chat-messages' \
@@ -192,10 +203,15 @@ import { Row, Col, Properties, Property, Heading, SubProperty } from '../md.tsx'
         "inputs": {
             "name": "dify"
         },
-        "query": "What are the specs of the iPhone 13 Pro Max?",
+        "query": "满月瓜是什么",
         "conversation_id": "101b4c97-fc2e-463c-90b1-5261a4cdcafb",
         "response_mode": "streaming",
         "user": "abc-123",
+        "doc_type": ["术语黑话"],
+        "history": [
+          {"role": "user", "content": "满月瓜是什么"},
+          {"role": "assistant", "content": "满月瓜指的是注册时间达到一个月的账号。"}
+        ],
         "files": [
           {
             "type": "image",
