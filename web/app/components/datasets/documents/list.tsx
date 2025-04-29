@@ -539,6 +539,7 @@ const DocumentList: FC<IDocumentListProps> = ({
                   {t('datasetDocuments.list.table.header.fileName')}
                 </div>
               </td>
+              <td className='w-[130px]'>{t('datasetDocuments.list.table.header.docType')}</td>
               <td className='w-[130px]'>{t('datasetDocuments.list.table.header.chunkingMode')}</td>
               <td className='w-24'>{t('datasetDocuments.list.table.header.words')}</td>
               <td className='w-44'>{t('datasetDocuments.list.table.header.hitCount')}</td>
@@ -603,6 +604,9 @@ const DocumentList: FC<IDocumentListProps> = ({
                       </Tooltip>
                     </div>
                   </div>
+                </td>
+                <td>
+                  {doc.doc_type && t(doc.doc_type)}
                 </td>
                 <td>
                   <ChunkingModeLabel

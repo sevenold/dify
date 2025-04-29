@@ -9,6 +9,7 @@ const translation = {
     table: {
       header: {
         fileName: 'NAME',
+        docType: 'DOCUMENT TYPE',
         chunkingMode: 'CHUNKING MODE',
         words: 'WORDS',
         hitCount: 'RETRIEVAL COUNT',

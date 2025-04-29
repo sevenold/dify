@@ -308,6 +308,7 @@ export type InitialDocumentDetail = {
   total_segments?: number
   doc_form: ChunkingMode
   doc_language: string
+  doc_type: string
 }
 
 export type SimpleDocumentDetail = InitialDocumentDetail & {

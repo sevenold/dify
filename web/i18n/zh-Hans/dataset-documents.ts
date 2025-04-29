@@ -9,6 +9,7 @@ const translation = {
     table: {
       header: {
         fileName: '名称',
+        docType: '文档类型',
         chunkingMode: '分段模式',
         words: '字符数',
         hitCount: '召回次数',
