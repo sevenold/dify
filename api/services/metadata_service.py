@@ -108,6 +108,7 @@ class MetadataService:
     def get_built_in_fields():
         return [
             {"name": BuiltInField.document_name.value, "type": "string"},
+            {"name": BuiltInField.doc_type.value, "type": "string"},
             {"name": BuiltInField.uploader.value, "type": "string"},
             {"name": BuiltInField.upload_date.value, "type": "time"},
             {"name": BuiltInField.last_update_date.value, "type": "time"},
@@ -131,6 +132,7 @@ class MetadataService:
                     else:
                         doc_metadata = copy.deepcopy(document.doc_metadata)
                     doc_metadata[BuiltInField.document_name.value] = document.name
+                    doc_metadata[BuiltInField.doc_type.value] = document.doc_type
                     doc_metadata[BuiltInField.uploader.value] = document.uploader
                     doc_metadata[BuiltInField.upload_date.value] = document.upload_date.timestamp()
                     doc_metadata[BuiltInField.last_update_date.value] = document.last_update_date.timestamp()
@@ -158,6 +160,7 @@ class MetadataService:
                 for document in documents:
                     doc_metadata = copy.deepcopy(document.doc_metadata)
                     doc_metadata.pop(BuiltInField.document_name.value, None)
+                    doc_metadata.pop(BuiltInField.doc_type.value, None)
                     doc_metadata.pop(BuiltInField.uploader.value, None)
                     doc_metadata.pop(BuiltInField.upload_date.value, None)
                     doc_metadata.pop(BuiltInField.last_update_date.value, None)
@@ -185,6 +188,7 @@ class MetadataService:
                     doc_metadata[metadata_value.name] = metadata_value.value
                 if dataset.built_in_field_enabled:
                     doc_metadata[BuiltInField.document_name.value] = document.name
+                    doc_metadata[BuiltInField.doc_type.value] = document.doc_type
                     doc_metadata[BuiltInField.uploader.value] = document.uploader
                     doc_metadata[BuiltInField.upload_date.value] = document.upload_date.timestamp()
                     doc_metadata[BuiltInField.last_update_date.value] = document.last_update_date.timestamp()

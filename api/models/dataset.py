@@ -222,6 +222,13 @@ class Dataset(db.Model):  # type: ignore[name-defined]
             doc_metadata.append(
                 {
                     "id": "built-in",
+                    "name": BuiltInField.doc_type.value,
+                    "type": "string",
+                }
+            )
+            doc_metadata.append(
+                {
+                    "id": "built-in",
                     "name": BuiltInField.uploader.value,
                     "type": "string",
                 }
@@ -502,6 +509,14 @@ class Document(db.Model):  # type: ignore[name-defined]
                 "name": BuiltInField.document_name,
                 "type": "string",
                 "value": self.name,
+            }
+        )
+        built_in_fields.append(
+            {
+                "id": "built-in",
+                "name": BuiltInField.doc_type,
+                "type": "string",
+                "value": self.doc_type,
             }
         )
         built_in_fields.append(
