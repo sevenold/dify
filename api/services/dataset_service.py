@@ -1334,6 +1334,15 @@ class DocumentService:
         document.doc_form = document_data.doc_form
         if document_data.doc_type:
             document.doc_type = document_data.doc_type
+        if document.doc_metadata:
+            doc_metadata = dict(document.doc_metadata)
+            doc_metadata['doc_type'] = document_data.doc_type
+            doc_metadata['document_name'] = document_data.name
+            doc_metadata['uploader'] = account.name
+            doc_metadata['last_update_date'] = document.updated_at.strftime("%Y-%m-%d %H:%M:%S")
+            doc_metadata['source'] = document.data_source_type
+            document.doc_metadata = doc_metadata
+
         db.session.add(document)
         db.session.commit()
         # update document segment
