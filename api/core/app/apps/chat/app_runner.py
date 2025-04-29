@@ -31,6 +31,7 @@ class ChatAppRunner(AppRunner):
         queue_manager: AppQueueManager,
         conversation: Conversation,
         message: Message,
+        history: list[str],
     ) -> None:
         """
         Run application
@@ -38,6 +39,7 @@ class ChatAppRunner(AppRunner):
         :param queue_manager: application queue manager
         :param conversation: conversation
         :param message: message
+        :param history: history
         :return:
         """
         app_config = application_generate_entity.app_config
@@ -70,6 +72,12 @@ class ChatAppRunner(AppRunner):
             )
 
             memory = TokenBufferMemory(conversation=conversation, model_instance=model_instance)
+        if history:
+            model_instance = ModelInstance(
+                provider_model_bundle=application_generate_entity.model_conf.provider_model_bundle,
+                model=application_generate_entity.model_conf.model,
+            )
+            memory = TokenBufferMemory(conversation=conversation, model_instance=model_instance, history=history)
 
         # organize all inputs and template to prompt messages
         # Include: prompt template, inputs, query(optional), files(optional)

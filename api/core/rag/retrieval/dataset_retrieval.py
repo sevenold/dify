@@ -107,6 +107,7 @@ class DatasetRetrieval:
         if len(dataset_ids) == 0:
             return None
         retrieve_config = config.retrieve_config
+        doc_type = config.doc_type
 
         # check model is support tool calling
         model_type_instance = model_config.provider_model_bundle.model_type_instance
@@ -176,6 +177,7 @@ class DatasetRetrieval:
                 message_id,
                 metadata_filter_document_ids,
                 metadata_condition,
+                doc_type,
             )
         elif retrieve_config.retrieve_strategy == DatasetRetrieveConfigEntity.RetrieveStrategy.MULTIPLE:
             all_documents = self.multiple_retrieve(
@@ -194,6 +196,7 @@ class DatasetRetrieval:
                 message_id,
                 metadata_filter_document_ids,
                 metadata_condition,
+                doc_type,
             )
 
         dify_documents = [item for item in all_documents if item.provider == "dify"]
@@ -290,6 +293,7 @@ class DatasetRetrieval:
         message_id: Optional[str] = None,
         metadata_filter_document_ids: Optional[dict[str, list[str]]] = None,
         metadata_condition: Optional[MetadataCondition] = None,
+        doc_type: Optional[list[str]] = [],
     ):
         tools = []
         for dataset in available_datasets:
@@ -386,6 +390,7 @@ class DatasetRetrieval:
                             reranking_mode=retrieval_model_config.get("reranking_mode", "reranking_model"),
                             weights=retrieval_model_config.get("weights", None),
                             document_ids_filter=document_ids_filter,
+                            doc_type=doc_type,
                         )
                 self._on_query(query, [dataset_id], app_id, user_from, user_id)
 
@@ -412,6 +417,7 @@ class DatasetRetrieval:
         message_id: Optional[str] = None,
         metadata_filter_document_ids: Optional[dict[str, list[str]]] = None,
         metadata_condition: Optional[MetadataCondition] = None,
+        doc_type: Optional[list[str]] = [],
     ):
         if not available_datasets:
             return []
@@ -471,6 +477,7 @@ class DatasetRetrieval:
                     "all_documents": all_documents,
                     "document_ids_filter": document_ids_filter,
                     "metadata_condition": metadata_condition,
+                    "doc_type": doc_type,
                 },
             )
             threads.append(retrieval_thread)
@@ -578,6 +585,7 @@ class DatasetRetrieval:
         all_documents: list,
         document_ids_filter: Optional[list[str]] = None,
         metadata_condition: Optional[MetadataCondition] = None,
+        doc_type: Optional[list[str]] = [], 
     ):
         with flask_app.app_context():
             dataset = db.session.query(Dataset).filter(Dataset.id == dataset_id).first()
@@ -617,6 +625,7 @@ class DatasetRetrieval:
                         query=query,
                         top_k=top_k,
                         document_ids_filter=document_ids_filter,
+                        doc_type=doc_type,
                     )
                     if documents:
                         all_documents.extend(documents)
@@ -637,6 +646,7 @@ class DatasetRetrieval:
                             reranking_mode=retrieval_model.get("reranking_mode") or "reranking_model",
                             weights=retrieval_model.get("weights", None),
                             document_ids_filter=document_ids_filter,
+                            doc_type=doc_type,
                         )
 
                         all_documents.extend(documents)

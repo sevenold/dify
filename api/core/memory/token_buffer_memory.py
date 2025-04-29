@@ -21,9 +21,10 @@ from models.workflow import WorkflowRun
 
 
 class TokenBufferMemory:
-    def __init__(self, conversation: Conversation, model_instance: ModelInstance) -> None:
+    def __init__(self, conversation: Conversation, model_instance: ModelInstance, history: list[str] = []) -> None:
         self.conversation = conversation
         self.model_instance = model_instance
+        self.history = history
 
     def get_history_prompt_messages(
         self, max_token_limit: int = 2000, message_limit: Optional[int] = None
@@ -33,88 +34,97 @@ class TokenBufferMemory:
         :param max_token_limit: max token limit
         :param message_limit: message limit
         """
-        app_record = self.conversation.app
-
-        # fetch limited messages, and return reversed
-        query = (
-            db.session.query(
-                Message.id,
-                Message.query,
-                Message.answer,
-                Message.created_at,
-                Message.workflow_run_id,
-                Message.parent_message_id,
-                Message.answer_tokens,
-            )
-            .filter(
-                Message.conversation_id == self.conversation.id,
-            )
-            .order_by(Message.created_at.desc())
-        )
-
-        if message_limit and message_limit > 0:
-            message_limit = min(message_limit, 500)
-        else:
-            message_limit = 500
-
-        messages = query.limit(message_limit).all()
-
-        # instead of all messages from the conversation, we only need to extract messages
-        # that belong to the thread of last message
-        thread_messages = extract_thread_messages(messages)
-
-        # for newly created message, its answer is temporarily empty, we don't need to add it to memory
-        if thread_messages and not thread_messages[0].answer and thread_messages[0].answer_tokens == 0:
-            thread_messages.pop(0)
-
-        messages = list(reversed(thread_messages))
-
-        prompt_messages: list[PromptMessage] = []
-        for message in messages:
-            files = db.session.query(MessageFile).filter(MessageFile.message_id == message.id).all()
-            if files:
-                file_extra_config = None
-                if self.conversation.mode not in {AppMode.ADVANCED_CHAT, AppMode.WORKFLOW}:
-                    file_extra_config = FileUploadConfigManager.convert(self.conversation.model_config)
+        prompt_messages = []
+        if self.history:
+            for message in self.history:
+                if message['role'] == 'user':
+                    prompt_messages.append(UserPromptMessage(content=message['content']))
                 else:
-                    if message.workflow_run_id:
-                        workflow_run = (
-                            db.session.query(WorkflowRun).filter(WorkflowRun.id == message.workflow_run_id).first()
-                        )
+                    prompt_messages.append(AssistantPromptMessage(content=message['content']))
+        else:
 
-                        if workflow_run and workflow_run.workflow:
-                            file_extra_config = FileUploadConfigManager.convert(
-                                workflow_run.workflow.features_dict, is_vision=False
+            app_record = self.conversation.app
+
+            # fetch limited messages, and return reversed
+            query = (
+                db.session.query(
+                    Message.id,
+                    Message.query,
+                    Message.answer,
+                    Message.created_at,
+                    Message.workflow_run_id,
+                    Message.parent_message_id,
+                    Message.answer_tokens,
+                )
+                .filter(
+                    Message.conversation_id == self.conversation.id,
+                )
+                .order_by(Message.created_at.desc())
+            )
+
+            if message_limit and message_limit > 0:
+                message_limit = min(message_limit, 500)
+            else:
+                message_limit = 500
+
+            messages = query.limit(message_limit).all()
+
+            # instead of all messages from the conversation, we only need to extract messages
+            # that belong to the thread of last message
+            thread_messages = extract_thread_messages(messages)
+
+            # for newly created message, its answer is temporarily empty, we don't need to add it to memory
+            if thread_messages and not thread_messages[0].answer and thread_messages[0].answer_tokens == 0:
+                thread_messages.pop(0)
+
+            messages = list(reversed(thread_messages))
+
+            prompt_messages: list[PromptMessage] = []
+            for message in messages:
+                files = db.session.query(MessageFile).filter(MessageFile.message_id == message.id).all()
+                if files:
+                    file_extra_config = None
+                    if self.conversation.mode not in {AppMode.ADVANCED_CHAT, AppMode.WORKFLOW}:
+                        file_extra_config = FileUploadConfigManager.convert(self.conversation.model_config)
+                    else:
+                        if message.workflow_run_id:
+                            workflow_run = (
+                                db.session.query(WorkflowRun).filter(WorkflowRun.id == message.workflow_run_id).first()
                             )
 
-                detail = ImagePromptMessageContent.DETAIL.LOW
-                if file_extra_config and app_record:
-                    file_objs = file_factory.build_from_message_files(
-                        message_files=files, tenant_id=app_record.tenant_id, config=file_extra_config
-                    )
-                    if file_extra_config.image_config and file_extra_config.image_config.detail:
-                        detail = file_extra_config.image_config.detail
-                else:
-                    file_objs = []
+                            if workflow_run and workflow_run.workflow:
+                                file_extra_config = FileUploadConfigManager.convert(
+                                    workflow_run.workflow.features_dict, is_vision=False
+                                )
 
-                if not file_objs:
-                    prompt_messages.append(UserPromptMessage(content=message.query))
-                else:
-                    prompt_message_contents: list[PromptMessageContentUnionTypes] = []
-                    prompt_message_contents.append(TextPromptMessageContent(data=message.query))
-                    for file in file_objs:
-                        prompt_message = file_manager.to_prompt_message_content(
-                            file,
-                            image_detail_config=detail,
+                    detail = ImagePromptMessageContent.DETAIL.LOW
+                    if file_extra_config and app_record:
+                        file_objs = file_factory.build_from_message_files(
+                            message_files=files, tenant_id=app_record.tenant_id, config=file_extra_config
                         )
-                        prompt_message_contents.append(prompt_message)
+                        if file_extra_config.image_config and file_extra_config.image_config.detail:
+                            detail = file_extra_config.image_config.detail
+                    else:
+                        file_objs = []
 
-                    prompt_messages.append(UserPromptMessage(content=prompt_message_contents))
+                    if not file_objs:
+                        prompt_messages.append(UserPromptMessage(content=message.query))
+                    else:
+                        prompt_message_contents: list[PromptMessageContentUnionTypes] = []
+                        prompt_message_contents.append(TextPromptMessageContent(data=message.query))
+                        for file in file_objs:
+                            prompt_message = file_manager.to_prompt_message_content(
+                                file,
+                                image_detail_config=detail,
+                            )
+                            prompt_message_contents.append(prompt_message)
 
-            else:
-                prompt_messages.append(UserPromptMessage(content=message.query))
+                        prompt_messages.append(UserPromptMessage(content=prompt_message_contents))
 
-            prompt_messages.append(AssistantPromptMessage(content=message.answer))
+                else:
+                    prompt_messages.append(UserPromptMessage(content=message.query))
+
+                prompt_messages.append(AssistantPromptMessage(content=message.answer))
 
         if not prompt_messages:
             return []

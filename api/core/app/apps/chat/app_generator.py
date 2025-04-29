@@ -87,6 +87,8 @@ class ChatAppGenerator(MessageBasedAppGenerator):
 
         query = query.replace("\x00", "")
         inputs = args["inputs"]
+        doc_type = args.get('doc_type', [])
+        history = args.get('history', [])
 
         extras = {"auto_generate_conversation_name": args.get("auto_generate_name", True)}
 
@@ -133,7 +135,8 @@ class ChatAppGenerator(MessageBasedAppGenerator):
             conversation=conversation,
             override_config_dict=override_model_config_dict,
         )
-
+        if app_config.dataset:
+            app_config.dataset.doc_type = doc_type
         # get tracing instance
         trace_manager = TraceQueueManager(app_id=app_model.id)
 
@@ -179,6 +182,7 @@ class ChatAppGenerator(MessageBasedAppGenerator):
                 "queue_manager": queue_manager,
                 "conversation_id": conversation.id,
                 "message_id": message.id,
+                "history": history,
             },
         )
 
@@ -203,6 +207,7 @@ class ChatAppGenerator(MessageBasedAppGenerator):
         queue_manager: AppQueueManager,
         conversation_id: str,
         message_id: str,
+        history: list[str],
     ) -> None:
         """
         Generate worker in a new thread.
@@ -211,6 +216,7 @@ class ChatAppGenerator(MessageBasedAppGenerator):
         :param queue_manager: queue manager
         :param conversation_id: conversation ID
         :param message_id: message ID
+        :param history: history
         :return:
         """
         with flask_app.app_context():
@@ -228,6 +234,7 @@ class ChatAppGenerator(MessageBasedAppGenerator):
                     queue_manager=queue_manager,
                     conversation=conversation,
                     message=message,
+                    history=history,
                 )
             except GenerateTaskStoppedError:
                 pass

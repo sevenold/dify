@@ -232,6 +232,7 @@ class DatasetEntity(BaseModel):
     """
 
     dataset_ids: list[str]
+    doc_type: Optional[list[str]] = []
     retrieve_config: DatasetRetrieveConfigEntity
 
 

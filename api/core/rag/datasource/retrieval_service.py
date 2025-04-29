@@ -42,6 +42,7 @@ class RetrievalService:
         reranking_mode: str = "reranking_model",
         weights: Optional[dict] = None,
         document_ids_filter: Optional[list[str]] = None,
+        doc_type: Optional[list[str]] = [],
     ):
         if not query:
             return []
@@ -82,6 +83,7 @@ class RetrievalService:
                         retrieval_method=retrieval_method,
                         exceptions=exceptions,
                         document_ids_filter=document_ids_filter,
+                        doc_type=doc_type,
                     )
                 )
             if RetrievalMethod.is_support_fulltext_search(retrieval_method):
@@ -98,6 +100,7 @@ class RetrievalService:
                         retrieval_method=retrieval_method,
                         exceptions=exceptions,
                         document_ids_filter=document_ids_filter,
+                        doc_type=doc_type,
                     )
                 )
             concurrent.futures.wait(futures, timeout=30, return_when=concurrent.futures.ALL_COMPLETED)
@@ -171,6 +174,7 @@ class RetrievalService:
         retrieval_method: str,
         exceptions: list,
         document_ids_filter: Optional[list[str]] = None,
+        doc_type: Optional[list[str]] = [],
     ):
         with flask_app.app_context():
             try:
@@ -183,6 +187,7 @@ class RetrievalService:
                     query,
                     search_type="similarity_score_threshold",
                     top_k=top_k,
+                    doc_type=doc_type,
                     score_threshold=score_threshold,
                     filter={"group_id": [dataset.id]},
                     document_ids_filter=document_ids_filter,

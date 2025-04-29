@@ -78,6 +78,7 @@ class DatasetConfigManager:
         if dataset_configs["retrieval_model"] == "single":
             return DatasetEntity(
                 dataset_ids=dataset_ids,
+                doc_type=dataset_configs.get("doc_type", []),
                 retrieve_config=DatasetRetrieveConfigEntity(
                     query_variable=query_variable,
                     retrieve_strategy=DatasetRetrieveConfigEntity.RetrieveStrategy.value_of(
@@ -97,6 +98,7 @@ class DatasetConfigManager:
         else:
             return DatasetEntity(
                 dataset_ids=dataset_ids,
+                doc_type=dataset_configs.get("doc_type", []),
                 retrieve_config=DatasetRetrieveConfigEntity(
                     query_variable=query_variable,
                     retrieve_strategy=DatasetRetrieveConfigEntity.RetrieveStrategy.value_of(
