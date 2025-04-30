@@ -9,7 +9,7 @@ class ChildDocument(BaseModel):
     """Class for storing a piece of text and associated metadata."""
 
     page_content: str
-    doc_type: Optional[str] = None
+    doc_type: Optional[str] = "默认"
 
     vector: Optional[list[float]] = None
 
@@ -24,7 +24,7 @@ class Document(BaseModel):
 
     page_content: str
 
-    doc_type: Optional[str] = None
+    doc_type: Optional[str] = "默认"
 
     vector: Optional[list[float]] = None
 

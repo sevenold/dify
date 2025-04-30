@@ -179,6 +179,7 @@ class IndexingRunner:
                     if document_segment.status != "completed":
                         document = Document(
                             page_content=document_segment.content,
+                            doc_type=dataset_document.doc_type,
                             metadata={
                                 "doc_id": document_segment.index_node_id,
                                 "doc_hash": document_segment.index_node_hash,
@@ -193,6 +194,7 @@ class IndexingRunner:
                                 for child_chunk in child_chunks:
                                     child_document = ChildDocument(
                                         page_content=child_chunk.content,
+                                        doc_type=dataset_document.doc_type,
                                         metadata={
                                             "doc_id": child_chunk.index_node_id,
                                             "doc_hash": child_chunk.index_node_hash,
@@ -623,7 +625,9 @@ class IndexingRunner:
             
             for document in chunk_documents:
                 document.doc_type = dataset_document.doc_type
-            
+                if document.children:
+                    for child in document.children:
+                        child.doc_type = dataset_document.doc_type
             # load index
             index_processor.load(dataset, chunk_documents, with_keywords=False)
 
