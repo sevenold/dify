@@ -207,3 +207,4 @@ plugins.jsonl
 
 # mise
 mise.toml
+test_run/

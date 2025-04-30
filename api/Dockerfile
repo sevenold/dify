@@ -1,12 +1,18 @@
 # base image
 FROM python:3.12-slim-bookworm AS base
 
+ARG https_proxy
+ARG HTTPS_PROXY=$https_proxy
+
 WORKDIR /app/api
 
-# Install uv
-ENV UV_VERSION=0.6.14
+RUN sed -i 's@deb.debian.org@mirrors.aliyun.com@g' /etc/apt/sources.list.d/debian.sources \
+    && sed -i 's@security.debian.org@mirrors.aliyun.com@g' /etc/apt/sources.list.d/debian.sources
 
-RUN pip install --no-cache-dir uv==${UV_VERSION}
+# Install uv
+ENV UV_VERSION=0.6.17
+
+RUN pip install --no-cache-dir uv==${UV_VERSION} -i https://mirrors.bfsu.edu.cn/pypi/web/simple/
 
 
 FROM base AS packages
@@ -35,7 +41,7 @@ ENV APP_WEB_URL=http://127.0.0.1:3000
 EXPOSE 5001
 
 # set timezone
-ENV TZ=UTC
+ENV TZ=Asia/Shanghai
 
 WORKDIR /app/api
 
@@ -43,14 +49,14 @@ RUN \
     apt-get update \
     # Install dependencies
     && apt-get install -y --no-install-recommends \
-        # basic environment
-        curl nodejs libgmp-dev libmpfr-dev libmpc-dev \
-        # For Security
-        expat libldap-2.5-0 perl libsqlite3-0 zlib1g \
-        # install a package to improve the accuracy of guessing mime type and file extension
-        media-types \
-        # install libmagic to support the use of python-magic guess MIMETYPE
-        libmagic1 \
+    # basic environment
+    curl nodejs libgmp-dev libmpfr-dev libmpc-dev \
+    # For Security
+    expat libldap-2.5-0 perl libsqlite3-0 zlib1g \
+    # install a package to improve the accuracy of guessing mime type and file extension
+    media-types \
+    # install libmagic to support the use of python-magic guess MIMETYPE
+    libmagic1 \
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/*
 
@@ -75,5 +81,7 @@ RUN chmod +x /entrypoint.sh
 
 ARG COMMIT_SHA
 ENV COMMIT_SHA=${COMMIT_SHA}
+ENV https_proxy=""
+ENV HTTPS_PROXY=""
 
 ENTRYPOINT ["/bin/bash", "/entrypoint.sh"]
