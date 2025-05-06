@@ -236,12 +236,12 @@ class MilvusVector(BaseVector):
             consistency_level="Session",
             collection_name=self._collection_name
         )
-        return list({_["doc_type"] for _ in result})    
+        return list({_["doc_type"] for _ in result})
 
 
-    def search_by_vector(self, 
-                         query_vector: list[float], 
-                         doc_type: Optional[str] = None, 
+    def search_by_vector(self,
+                         query_vector: list[float],
+                         doc_type: Optional[str] = None,
                          **kwargs: Any) -> list[Document]:
         """
         Search for documents by vector similarity.
@@ -354,7 +354,7 @@ class MilvusVector(BaseVector):
                 fields.append(FieldSchema(Field.CONTENT_KEY.value, DataType.VARCHAR, **content_field_kwargs))
                 # Create the data type field
                 fields.append(
-                    FieldSchema(Field.DOC_TYPE.value, DataType.VARCHAR, max_length=65_535)
+                    FieldSchema(Field.DOC_TYPE.value, DataType.VARCHAR, max_length=65_535, nullable=True)
                 )
                 # Create the primary key field
                 fields.append(FieldSchema(Field.PRIMARY_KEY.value, DataType.INT64, is_primary=True, auto_id=True))
