@@ -1,6 +1,7 @@
 """Abstract interface for document loader implementations."""
 
 import datetime
+import io
 import logging
 import mimetypes
 import os
@@ -12,6 +13,8 @@ from xml.etree import ElementTree
 
 import requests
 from docx import Document as DocxDocument
+from PIL import Image
+from rapidocr import RapidOCR
 
 from configs import dify_config
 from core.helper import ssrf_proxy
@@ -37,6 +40,7 @@ class WordExtractor(BaseExtractor):
         self.file_path = file_path
         self.tenant_id = tenant_id
         self.user_id = user_id
+        self._engine = RapidOCR()
 
         if "~" in self.file_path:
             self.file_path = os.path.expanduser(self.file_path)
@@ -82,7 +86,8 @@ class WordExtractor(BaseExtractor):
         image_map = {}
 
         for rel in doc.part.rels.values():
-            if "image" in rel.target_ref:
+            if "image" in rel.reltype or any(ext in rel.target_ref.lower() 
+                                             for ext in ["png", "jpg", "jpeg", "gif", "bmp"]):
                 image_count += 1
                 if rel.is_external:
                     url = rel.target_ref
@@ -123,10 +128,22 @@ class WordExtractor(BaseExtractor):
                     used_by=self.user_id,
                     used_at=datetime.datetime.now(datetime.UTC).replace(tzinfo=None),
                 )
-
                 db.session.add(upload_file)
                 db.session.commit()
-                image_map[rel.target_part] = f"![image]({dify_config.FILES_URL}/files/{upload_file.id}/file-preview)"
+                # OCR
+                ocr_text = ""
+                image_markdown = f"![image]({dify_config.FILES_URL}/files/{upload_file.id}/file-preview)"
+                try:
+                    if hasattr(rel.target_part, 'blob'):
+                        img_bytes = io.BytesIO(rel.target_part.blob)
+                        img = Image.open(img_bytes)
+                        if ocr_result := self._engine(img, use_det=True, use_cls=True, use_rec=True).txts:
+                            ocr_text = ",".join(ocr_result).strip()
+                except Exception as e:
+                    logger.warning(f"OCR 识别图片失败: {e}")
+                if ocr_text:
+                    image_markdown += f"\n图片内容: ```{ocr_text}```\n"
+                image_map[rel.target_part] = image_markdown
 
         return image_map
 
@@ -209,7 +226,6 @@ class WordExtractor(BaseExtractor):
         os.makedirs(image_folder, exist_ok=True)
 
         content = []
-
         image_map = self._extract_images_from_docx(doc, image_folder)
 
         hyperlinks_url = None
