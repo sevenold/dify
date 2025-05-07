@@ -21,7 +21,7 @@ FROM base AS packages
 # RUN sed -i 's@deb.debian.org@mirrors.aliyun.com@g' /etc/apt/sources.list.d/debian.sources
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends gcc g++ libc-dev libffi-dev libgmp-dev libmpfr-dev libmpc-dev libgl1-mesa-dev libglib2.0-0
+    && apt-get install -y --no-install-recommends gcc g++ libc-dev libffi-dev libgmp-dev libmpfr-dev libmpc-dev 
 
 # Install Python dependencies
 COPY pyproject.toml uv.lock ./
@@ -57,6 +57,9 @@ RUN \
     media-types \
     # install libmagic to support the use of python-magic guess MIMETYPE
     libmagic1 \
+    # Add OpenGL dependencies
+    libgl1-mesa-glx \
+    libgl1-mesa-dev libglib2.0-0 \
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/*
 
