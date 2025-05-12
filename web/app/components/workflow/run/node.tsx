@@ -32,7 +32,6 @@ import { hasRetryNode } from '@/app/components/workflow/utils'
 type Props = {
   className?: string
   nodeInfo: NodeTracing
-  allExecutions?: NodeTracing[]
   inMessage?: boolean
   hideInfo?: boolean
   hideProcessDetail?: boolean
@@ -47,7 +46,6 @@ type Props = {
 const NodePanel: FC<Props> = ({
   className,
   nodeInfo,
-  allExecutions,
   inMessage = false,
   hideInfo = false,
   hideProcessDetail,
@@ -159,7 +157,6 @@ const NodePanel: FC<Props> = ({
             {isIterationNode && !notShowIterationNav && onShowIterationDetail && (
               <IterationLogTrigger
                 nodeInfo={nodeInfo}
-                allExecutions={allExecutions}
                 onShowIterationResultList={onShowIterationDetail}
               />
             )}
@@ -167,7 +164,6 @@ const NodePanel: FC<Props> = ({
             {isLoopNode && !notShowLoopNav && onShowLoopDetail && (
               <LoopLogTrigger
                 nodeInfo={nodeInfo}
-                allExecutions={allExecutions}
                 onShowLoopResultList={onShowLoopDetail}
               />
             )}

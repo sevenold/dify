@@ -30,7 +30,7 @@ class Variable(Segment):
     """
 
     id: str = Field(
-        default_factory=lambda: str(uuid4()),
+        default=lambda _: str(uuid4()),
         description="Unique identity for variable.",
     )
     name: str

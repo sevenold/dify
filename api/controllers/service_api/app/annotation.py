@@ -1,5 +1,5 @@
 from flask import request
-from flask_restful import Resource, marshal, marshal_with, reqparse
+from flask_restful import Resource, marshal, marshal_with, reqparse  # type: ignore
 from werkzeug.exceptions import Forbidden
 
 from controllers.service_api import api

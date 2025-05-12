@@ -27,7 +27,6 @@ const HeaderInMobile = () => {
     handleDeleteConversation,
     handleRenameConversation,
     conversationRenaming,
-    inputsForms,
   } = useChatWithHistoryContext()
   const { t } = useTranslation()
   const isPin = pinnedConversationList.some(item => item.id === currentConversationId)
@@ -100,7 +99,6 @@ const HeaderInMobile = () => {
         <MobileOperationDropdown
           handleResetChat={handleNewConversation}
           handleViewChatSettings={() => setShowChatSettings(true)}
-          hideViewChatSettings={inputsForms.length < 1}
         />
       </div>
       {showSidebar && (

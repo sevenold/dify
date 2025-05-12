@@ -1,6 +1,5 @@
 import enum
 import json
-from typing import cast
 
 from flask_login import UserMixin  # type: ignore
 from sqlalchemy import func
@@ -47,12 +46,13 @@ class Account(UserMixin, Base):
 
     @property
     def current_tenant(self):
+        # FIXME: fix the type error later, because the type is important maybe cause some bugs
         return self._current_tenant  # type: ignore
 
     @current_tenant.setter
     def current_tenant(self, value: "Tenant"):
         tenant = value
-        ta = db.session.query(TenantAccountJoin).filter_by(tenant_id=tenant.id, account_id=self.id).first()
+        ta = TenantAccountJoin.query.filter_by(tenant_id=tenant.id, account_id=self.id).first()
         if ta:
             tenant.current_role = ta.role
         else:
@@ -64,23 +64,25 @@ class Account(UserMixin, Base):
     def current_tenant_id(self) -> str | None:
         return self._current_tenant.id if self._current_tenant else None
 
-    def set_tenant_id(self, tenant_id: str):
-        tenant_account_join = cast(
-            tuple[Tenant, TenantAccountJoin],
-            (
+    @current_tenant_id.setter
+    def current_tenant_id(self, value: str):
+        try:
+            tenant_account_join = (
                 db.session.query(Tenant, TenantAccountJoin)
-                .filter(Tenant.id == tenant_id)
+                .filter(Tenant.id == value)
                 .filter(TenantAccountJoin.tenant_id == Tenant.id)
                 .filter(TenantAccountJoin.account_id == self.id)
                 .one_or_none()
-            ),
-        )
+            )
 
-        if not tenant_account_join:
-            return
+            if tenant_account_join:
+                tenant, ta = tenant_account_join
+                tenant.current_role = ta.role
+            else:
+                tenant = None
+        except Exception:
+            tenant = None
 
-        tenant, join = tenant_account_join
-        tenant.current_role = join.role
         self._current_tenant = tenant
 
     @property
@@ -189,7 +191,7 @@ class TenantAccountRole(enum.StrEnum):
         }
 
 
-class Tenant(Base):
+class Tenant(db.Model):  # type: ignore[name-defined]
     __tablename__ = "tenants"
     __table_args__ = (db.PrimaryKeyConstraint("id", name="tenant_pkey"),)
 
@@ -218,7 +220,7 @@ class Tenant(Base):
         self.custom_config = json.dumps(value)
 
 
-class TenantAccountJoin(Base):
+class TenantAccountJoin(db.Model):  # type: ignore[name-defined]
     __tablename__ = "tenant_account_joins"
     __table_args__ = (
         db.PrimaryKeyConstraint("id", name="tenant_account_join_pkey"),
@@ -237,7 +239,7 @@ class TenantAccountJoin(Base):
     updated_at = db.Column(db.DateTime, nullable=False, server_default=func.current_timestamp())
 
 
-class AccountIntegrate(Base):
+class AccountIntegrate(db.Model):  # type: ignore[name-defined]
     __tablename__ = "account_integrates"
     __table_args__ = (
         db.PrimaryKeyConstraint("id", name="account_integrate_pkey"),
@@ -254,7 +256,7 @@ class AccountIntegrate(Base):
     updated_at = db.Column(db.DateTime, nullable=False, server_default=func.current_timestamp())
 
 
-class InvitationCode(Base):
+class InvitationCode(db.Model):  # type: ignore[name-defined]
     __tablename__ = "invitation_codes"
     __table_args__ = (
         db.PrimaryKeyConstraint("id", name="invitation_code_pkey"),

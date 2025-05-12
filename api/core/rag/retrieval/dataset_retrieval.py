@@ -150,7 +150,7 @@ class DatasetRetrieval:
         else:
             inputs = {}
         available_datasets_ids = [dataset.id for dataset in available_datasets]
-        metadata_filter_document_ids, metadata_condition = self.get_metadata_filter_condition(
+        metadata_filter_document_ids, metadata_condition = self._get_metadata_filter_condition(
             available_datasets_ids,
             query,
             tenant_id,
@@ -659,8 +659,6 @@ class DatasetRetrieval:
         return_resource: bool,
         invoke_from: InvokeFrom,
         hit_callback: DatasetIndexToolCallbackHandler,
-        user_id: str,
-        inputs: dict,
     ) -> Optional[list[DatasetRetrieverBaseTool]]:
         """
         A dataset tool is a tool that can be used to retrieve information from a dataset
@@ -718,9 +716,6 @@ class DatasetRetrieval:
                     hit_callbacks=[hit_callback],
                     return_resource=return_resource,
                     retriever_from=invoke_from.to_source(),
-                    retrieve_config=retrieve_config,
-                    user_id=user_id,
-                    inputs=inputs,
                 )
 
                 tools.append(tool)
@@ -841,7 +836,7 @@ class DatasetRetrieval:
         )
         return filter_documents[:top_k] if top_k else filter_documents
 
-    def get_metadata_filter_condition(
+    def _get_metadata_filter_condition(
         self,
         dataset_ids: list,
         query: str,
@@ -891,31 +886,20 @@ class DatasetRetrieval:
                 )
         elif metadata_filtering_mode == "manual":
             if metadata_filtering_conditions:
-                conditions = []
+                metadata_condition = MetadataCondition(**metadata_filtering_conditions.model_dump())
                 for sequence, condition in enumerate(metadata_filtering_conditions.conditions):  # type: ignore
                     metadata_name = condition.name
                     expected_value = condition.value
-                    if expected_value is not None and condition.comparison_operator not in ("empty", "not empty"):
+                    if expected_value is not None or condition.comparison_operator in ("empty", "not empty"):
                         if isinstance(expected_value, str):
                             expected_value = self._replace_metadata_filter_value(expected_value, inputs)
-                    conditions.append(
-                        Condition(
-                            name=metadata_name,
-                            comparison_operator=condition.comparison_operator,
-                            value=expected_value,
+                        filters = self._process_metadata_filter_func(
+                            sequence,
+                            condition.comparison_operator,
+                            metadata_name,
+                            expected_value,
+                            filters,
                         )
-                    )
-                    filters = self._process_metadata_filter_func(
-                        sequence,
-                        condition.comparison_operator,
-                        metadata_name,
-                        expected_value,
-                        filters,
-                    )
-                metadata_condition = MetadataCondition(
-                    logical_operator=metadata_filtering_conditions.logical_operator,
-                    conditions=conditions,
-                )
         else:
             raise ValueError("Invalid metadata filtering mode")
         if filters:

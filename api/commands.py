@@ -668,7 +668,7 @@ def upgrade_db():
             click.echo(click.style("Starting database migration.", fg="green"))
 
             # run db migration
-            import flask_migrate
+            import flask_migrate  # type: ignore
 
             flask_migrate.upgrade()
 

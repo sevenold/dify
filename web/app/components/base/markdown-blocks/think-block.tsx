@@ -41,10 +41,9 @@ const useThinkTimer = (children: any) => {
   const timerRef = useRef<NodeJS.Timeout>()
 
   useEffect(() => {
-    if (isComplete) return
-
     timerRef.current = setInterval(() => {
-      setElapsedTime(Math.floor((Date.now() - startTime) / 100) / 10)
+      if (!isComplete)
+        setElapsedTime(Math.floor((Date.now() - startTime) / 100) / 10)
     }, 100)
 
     return () => {
@@ -54,8 +53,11 @@ const useThinkTimer = (children: any) => {
   }, [startTime, isComplete])
 
   useEffect(() => {
-    if (hasEndThink(children))
+    if (hasEndThink(children)) {
       setIsComplete(true)
+      if (timerRef.current)
+        clearInterval(timerRef.current)
+    }
   }, [children])
 
   return { elapsedTime, isComplete }

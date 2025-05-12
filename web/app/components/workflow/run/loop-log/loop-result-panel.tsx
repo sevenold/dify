@@ -115,10 +115,8 @@ const LoopResultPanel: FC<Props> = ({
               className="h-px grow bg-divider-subtle"
             ></div>}
             <div className={cn(
-              'transition-all duration-200',
-              expandedLoops[index]
-                ? 'opacity-100'
-                : 'max-h-0 overflow-hidden opacity-0',
+              'overflow-hidden transition-all duration-200',
+              expandedLoops[index] ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0',
             )}>
               {
                 loopVariableMap?.[index] && (

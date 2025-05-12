@@ -8,7 +8,6 @@ import type { WorkflowProps } from '@/app/components/workflow'
 import WorkflowChildren from './workflow-children'
 import {
   useNodesSyncDraft,
-  useWorkflowRefreshDraft,
   useWorkflowRun,
   useWorkflowStartRun,
 } from '../hooks'
@@ -33,7 +32,6 @@ const WorkflowMain = ({
     doSyncWorkflowDraft,
     syncWorkflowDraftWhenPageClose,
   } = useNodesSyncDraft()
-  const { handleRefreshWorkflowDraft } = useWorkflowRefreshDraft()
   const {
     handleBackupDraft,
     handleLoadBackupDraft,
@@ -51,7 +49,6 @@ const WorkflowMain = ({
     return {
       syncWorkflowDraftWhenPageClose,
       doSyncWorkflowDraft,
-      handleRefreshWorkflowDraft,
       handleBackupDraft,
       handleLoadBackupDraft,
       handleRestoreFromPublishedWorkflow,
@@ -64,7 +61,6 @@ const WorkflowMain = ({
   }, [
     syncWorkflowDraftWhenPageClose,
     doSyncWorkflowDraft,
-    handleRefreshWorkflowDraft,
     handleBackupDraft,
     handleLoadBackupDraft,
     handleRestoreFromPublishedWorkflow,

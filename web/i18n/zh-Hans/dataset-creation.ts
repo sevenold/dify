@@ -79,7 +79,7 @@ const translation = {
       run: '运行',
       firecrawlTitle: '使用 🔥Firecrawl 提取网页内容',
       firecrawlDoc: 'Firecrawl 文档',
-      firecrawlDocLink: 'https://docs.dify.ai/zh-hans/guides/knowledge-base/create-knowledge-and-upload-documents/import-content-data/sync-from-website',
+      firecrawlDocLink: 'https://docs.dify.ai/v/zh-hans/guides/knowledge-base/sync-from-website',
       jinaReaderTitle: '将整个站点内容转换为 Markdown 格式',
       jinaReaderDoc: '了解更多关于 Jina Reader',
       jinaReaderDocLink: 'https://jina.ai/reader',

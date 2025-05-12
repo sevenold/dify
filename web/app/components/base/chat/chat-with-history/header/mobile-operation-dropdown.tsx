@@ -9,13 +9,11 @@ import ActionButton, { ActionButtonState } from '@/app/components/base/action-bu
 type Props = {
   handleResetChat: () => void
   handleViewChatSettings: () => void
-  hideViewChatSettings?: boolean
 }
 
 const MobileOperationDropdown = ({
   handleResetChat,
   handleViewChatSettings,
-  hideViewChatSettings = false,
 }: Props) => {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
@@ -44,11 +42,9 @@ const MobileOperationDropdown = ({
           <div className='system-md-regular flex cursor-pointer items-center space-x-1 rounded-lg px-3 py-1.5 text-text-secondary hover:bg-state-base-hover' onClick={handleResetChat}>
             <span className='grow'>{t('share.chat.resetChat')}</span>
           </div>
-          {!hideViewChatSettings && (
-            <div className='system-md-regular flex cursor-pointer items-center space-x-1 rounded-lg px-3 py-1.5 text-text-secondary hover:bg-state-base-hover' onClick={handleViewChatSettings}>
-              <span className='grow'>{t('share.chat.viewChatSettings')}</span>
-            </div>
-          )}
+          <div className='system-md-regular flex cursor-pointer items-center space-x-1 rounded-lg px-3 py-1.5 text-text-secondary hover:bg-state-base-hover' onClick={handleViewChatSettings}>
+            <span className='grow'>{t('share.chat.viewChatSettings')}</span>
+          </div>
         </div>
       </PortalToFollowElemContent>
     </PortalToFollowElem>

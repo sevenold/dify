@@ -28,7 +28,7 @@ from core.ops.langsmith_trace.entities.langsmith_trace_entity import (
     LangSmithRunUpdateModel,
 )
 from core.ops.utils import filter_none_values, generate_dotted_order
-from core.repositories import SQLAlchemyWorkflowNodeExecutionRepository
+from core.workflow.repository.repository_factory import RepositoryFactory
 from extensions.ext_database import db
 from models.model import EndUser, MessageFile
 
@@ -137,8 +137,12 @@ class LangSmithDataTrace(BaseTraceInstance):
 
         # through workflow_run_id get all_nodes_execution using repository
         session_factory = sessionmaker(bind=db.engine)
-        workflow_node_execution_repository = SQLAlchemyWorkflowNodeExecutionRepository(
-            session_factory=session_factory, tenant_id=trace_info.tenant_id, app_id=trace_info.metadata.get("app_id")
+        workflow_node_execution_repository = RepositoryFactory.create_workflow_node_execution_repository(
+            params={
+                "tenant_id": trace_info.tenant_id,
+                "app_id": trace_info.metadata.get("app_id"),
+                "session_factory": session_factory,
+            },
         )
 
         # Get all executions for this workflow run

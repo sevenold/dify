@@ -86,7 +86,7 @@ class WordExtractor(BaseExtractor):
         image_map = {}
 
         for rel in doc.part.rels.values():
-            if "image" in rel.reltype or any(ext in rel.target_ref.lower()
+            if "image" in rel.reltype or any(ext in rel.target_ref.lower() 
                                              for ext in ["png", "jpg", "jpeg", "gif", "bmp"]):
                 image_count += 1
                 if rel.is_external:
@@ -241,7 +241,7 @@ class WordExtractor(BaseExtractor):
                         xml = ElementTree.XML(run.element.xml)
                         x_child = [c for c in xml.iter() if c is not None]
                         for x in x_child:
-                            if x is None:
+                            if x_child is None:
                                 continue
                             if x.tag.endswith("instrText"):
                                 if x.text is None:

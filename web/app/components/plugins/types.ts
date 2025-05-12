@@ -36,7 +36,6 @@ export type PluginEndpointDeclaration = {
 export type EndpointItem = {
   path: string
   method: string
-  hidden?: boolean
 }
 
 export type EndpointListItem = {

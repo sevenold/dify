@@ -2,7 +2,7 @@ import threading
 from typing import Optional
 
 import contexts
-from core.repositories import SQLAlchemyWorkflowNodeExecutionRepository
+from core.workflow.repository import RepositoryFactory
 from core.workflow.repository.workflow_node_execution_repository import OrderConfig
 from extensions.ext_database import db
 from libs.infinite_scroll_pagination import InfiniteScrollPagination
@@ -129,8 +129,12 @@ class WorkflowRunService:
             return []
 
         # Use the repository to get the node executions
-        repository = SQLAlchemyWorkflowNodeExecutionRepository(
-            session_factory=db.engine, tenant_id=app_model.tenant_id, app_id=app_model.id
+        repository = RepositoryFactory.create_workflow_node_execution_repository(
+            params={
+                "tenant_id": app_model.tenant_id,
+                "app_id": app_model.id,
+                "session_factory": db.session.get_bind(),
+            }
         )
 
         # Use the repository to get the node executions with ordering

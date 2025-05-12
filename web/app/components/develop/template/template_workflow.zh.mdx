@@ -87,7 +87,7 @@ Workflow 应用无会话支持，适合用于翻译/文章写作/总结 AI 等�
     每个流式块均为 data: 开头，块之间以 `\n\n` 即两个换行符分隔，如下所示：
     <CodeGroup>
     ```streaming {{ title: 'Response' }}
-    data: {"event": "text_chunk", "workflow_run_id": "b85e5fc5-751b-454d-b14e-dc5f240b0a31", "task_id": "bd029338-b068-4d34-a331-fc85478922c2", "data": {"text": "\u4e3a\u4e86", "from_variable_selector": ["1745912968134", "text"]}}\n\n
+    data: {"event": "message", "task_id": "900bbd43-dc0b-4383-a372-aa6e6c414227", "id": "663c5084-a254-4040-8ad3-51f2a3c1a77c", "answer": "Hi", "created_at": 1705398420}\n\n
     ```
     </CodeGroup>
     流式块中根据 `event` 不同，结构也不同，包含以下类型：
@@ -113,13 +113,6 @@ Workflow 应用无会话支持，适合用于翻译/文章写作/总结 AI 等�
         - `predecessor_node_id` (string) 前置节点 ID，用于画布展示执行路径
         - `inputs` (object) 节点中所有使用到的前置节点变量内容
         - `created_at` (timestamp) 开始时间
-    - `event: text_chunk` 文本片段
-      - `task_id` (string) 任务 ID，用于请求跟踪和下方的停止响应接口
-      - `workflow_run_id` (string) workflow 执行 ID
-      - `event` (string) 固定为 `text_chunk`
-      - `data` (object) 详细内容
-        - `text` (string) 文本内容
-        - `from_variable_selector` (array) 文本来源路径，帮助开发者了解文本是由哪个节点的哪个变量生成的
     - `event: node_finished` node 执行结束，成功失败同一事件中不同状态
       - `task_id` (string) 任务 ID，用于请求跟踪和下方的停止响应接口
       - `workflow_run_id` (string) workflow 执行 ID

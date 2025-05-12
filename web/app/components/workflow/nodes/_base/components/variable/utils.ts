@@ -577,20 +577,8 @@ export const toNodeOutputVars = (
       chatVarList: conversationVariables,
     },
   }
-  // Sort nodes in reverse chronological order (most recent first)
-  const sortedNodes = [...nodes].sort((a, b) => {
-    if (a.data.type === BlockEnum.Start) return 1
-    if (b.data.type === BlockEnum.Start) return -1
-    if (a.data.type === 'env') return 1
-    if (b.data.type === 'env') return -1
-    if (a.data.type === 'conversation') return 1
-    if (b.data.type === 'conversation') return -1
-    // sort nodes by x position
-    return (b.position?.x || 0) - (a.position?.x || 0)
-  })
-
   const res = [
-    ...sortedNodes.filter(node => SUPPORT_OUTPUT_VARS_NODE.includes(node?.data?.type)),
+    ...nodes.filter(node => SUPPORT_OUTPUT_VARS_NODE.includes(node?.data?.type)),
     ...(environmentVariables.length > 0 ? [ENV_NODE] : []),
     ...((isChatMode && conversationVariables.length > 0) ? [CHAT_VAR_NODE] : []),
   ].map((node) => {

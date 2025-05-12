@@ -71,7 +71,7 @@ const translation = {
       run: 'วิ่ง',
       firecrawlTitle: 'แยกเนื้อหาเว็บด้วย 🔥Firecrawl',
       firecrawlDoc: 'เอกสาร Firecrawl',
-      firecrawlDocLink: 'https://docs.dify.ai/en/guides/knowledge-base/create-knowledge-and-upload-documents/import-content-data/sync-from-website',
+      firecrawlDocLink: 'https://docs.dify.ai/guides/knowledge-base/sync-from-website',
       jinaReaderTitle: 'แปลงทั้งไซต์เป็น Markdown',
       jinaReaderDoc: 'เรียนรู้เพิ่มเติมเกี่ยวกับ Jina Reader',
       jinaReaderDocLink: 'https://jina.ai/reader',
