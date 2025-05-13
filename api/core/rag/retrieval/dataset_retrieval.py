@@ -587,7 +587,7 @@ class DatasetRetrieval:
         metadata_condition: Optional[MetadataCondition] = None,
         doc_type: Optional[list[str]] = [],
     ):
-        if not doc_type:
+        if not doc_type and metadata_condition and metadata_condition.conditions:
             doc_type = [_.value for _ in metadata_condition.conditions
                         if _.name == 'doc_type' and _.comparison_operator=='is']
         with flask_app.app_context():
