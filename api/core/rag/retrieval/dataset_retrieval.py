@@ -585,8 +585,11 @@ class DatasetRetrieval:
         all_documents: list,
         document_ids_filter: Optional[list[str]] = None,
         metadata_condition: Optional[MetadataCondition] = None,
-        doc_type: Optional[list[str]] = [], 
+        doc_type: Optional[list[str]] = [],
     ):
+        if not doc_type:
+            doc_type = [_.value for _ in metadata_condition.conditions
+                        if _.name == 'doc_type' and _.comparison_operator=='is']
         with flask_app.app_context():
             dataset = db.session.query(Dataset).filter(Dataset.id == dataset_id).first()
 
