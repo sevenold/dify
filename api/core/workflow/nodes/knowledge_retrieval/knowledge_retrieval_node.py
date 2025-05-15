@@ -264,6 +264,7 @@ class KnowledgeRetrievalNode(LLMNode):
                     "data_source_type": "external",
                     "retriever_from": "workflow",
                     "score": item.metadata.get("score"),
+                    "doc_metadata": item.metadata,
                 },
                 "title": item.metadata.get("title"),
                 "content": item.page_content,
@@ -275,12 +276,16 @@ class KnowledgeRetrievalNode(LLMNode):
             if records:
                 for record in records:
                     segment = record.segment
-                    dataset = Dataset.query.filter_by(id=segment.dataset_id).first()
-                    document = Document.query.filter(
-                        Document.id == segment.document_id,
-                        Document.enabled == True,
-                        Document.archived == False,
-                    ).first()
+                    dataset = db.session.query(Dataset).filter_by(id=segment.dataset_id).first()  # type: ignore
+                    document = (
+                        db.session.query(Document)
+                        .filter(
+                            Document.id == segment.document_id,
+                            Document.enabled == True,
+                            Document.archived == False,
+                        )
+                        .first()
+                    )
                     if dataset and document:
                         source = {
                             "metadata": {

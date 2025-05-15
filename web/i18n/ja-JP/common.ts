@@ -1,4 +1,10 @@
 const translation = {
+  theme: {
+    theme: 'テーマ',
+    light: '明るい',
+    dark: '暗い',
+    auto: 'システム',
+  },
   api: {
     success: '成功',
     actionSuccess: 'アクションが成功しました',
@@ -162,6 +168,7 @@ const translation = {
     community: 'コミュニティ',
     about: 'Difyについて',
     logout: 'ログアウト',
+    github: 'ギットハブ',
   },
   compliance: {
     soc2Type1: 'SOC 2 Type I 報告書',
@@ -563,6 +570,7 @@ const translation = {
     inputPlaceholder: 'ボットと話す',
     thought: '思考',
     thinking: '考え中...',
+    resend: '再送信してください',
   },
   promptEditor: {
     placeholder: 'ここにプロンプトワードを入力してください。変数を挿入するには「{」を、プロンプトコンテンツブロックを挿入するには「/」を入力します。',
@@ -652,6 +660,11 @@ const translation = {
   },
   pagination: {
     perPage: 'ページあたりのアイテム数',
+  },
+  imageInput: {
+    browse: 'ブラウズする',
+    supportedFormats: 'PNG、JPG、JPEG、WEBP、およびGIFをサポートしています。',
+    dropImageHere: 'ここに画像をドロップするか、',
   },
 }
 

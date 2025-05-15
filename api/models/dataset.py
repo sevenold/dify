@@ -92,7 +92,8 @@ class Dataset(db.Model):  # type: ignore[name-defined]
     @property
     def latest_process_rule(self):
         return (
-            DatasetProcessRule.query.filter(DatasetProcessRule.dataset_id == self.id)
+            db.session.query(DatasetProcessRule)
+            .filter(DatasetProcessRule.dataset_id == self.id)
             .order_by(DatasetProcessRule.created_at.desc())
             .first()
         )
@@ -137,7 +138,8 @@ class Dataset(db.Model):  # type: ignore[name-defined]
     @property
     def word_count(self):
         return (
-            Document.query.with_entities(func.coalesce(func.sum(Document.word_count)))
+            db.session.query(Document)
+            .with_entities(func.coalesce(func.sum(Document.word_count)))
             .filter(Document.dataset_id == self.id)
             .scalar()
         )
@@ -446,12 +448,13 @@ class Document(db.Model):  # type: ignore[name-defined]
 
     @property
     def segment_count(self):
-        return DocumentSegment.query.filter(DocumentSegment.document_id == self.id).count()
+        return db.session.query(DocumentSegment).filter(DocumentSegment.document_id == self.id).count()
 
     @property
     def hit_count(self):
         return (
-            DocumentSegment.query.with_entities(func.coalesce(func.sum(DocumentSegment.hit_count)))
+            db.session.query(DocumentSegment)
+            .with_entities(func.coalesce(func.sum(DocumentSegment.hit_count)))
             .filter(DocumentSegment.document_id == self.id)
             .scalar()
         )
@@ -906,7 +909,7 @@ class DatasetKeywordTable(db.Model):  # type: ignore[name-defined]
                 return dct
 
         # get dataset
-        dataset = Dataset.query.filter_by(id=self.dataset_id).first()
+        dataset = db.session.query(Dataset).filter_by(id=self.dataset_id).first()
         if not dataset:
             return None
         if self.data_source_type == "database":
